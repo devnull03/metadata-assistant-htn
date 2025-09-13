@@ -1,25 +1,15 @@
 <script lang="ts">
-	import { showDirectoryPicker } from "native-file-system-adapter";
+	import { getUploadedFiles } from "$lib/utils/files";
 	import * as kv from "idb-keyval";
+	const folder = await getUploadedFiles();
 	const selectFolder = async () => {
 		const dir = await showDirectoryPicker();
 		console.log(dir);
 		await kv.set("test1", dir);
 		console.log(await kv.get("test1"));
 	};
-	let files = $state<FileList | null | undefined>();
-
-	$effect(() => {
-		if (files) {
-			// Note that `files` is of type `FileList`, not an Array:
-			// https://developer.mozilla.org/en-US/docs/Web/API/FileList
-			console.log(files);
-
-			for (const file of files) {
-				console.log(`${file.name}: ${file.size} bytes`);
-			}
-		}
-	});
+	const files = 
 </script>
 
-<input bind:files type="file" webkitdirectory/>
+<button onclick={selectFolder}>select folder</button>
+

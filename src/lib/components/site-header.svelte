@@ -7,6 +7,12 @@
 	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
 
 	const sidebar = Sidebar.useSidebar();
+
+	interface Props {
+		main?: string;
+		sub?: string[];
+	}
+	let props: Props = $props();
 </script>
 
 <header class="bg-background sticky top-0 z-50 flex w-full items-center border-b">
@@ -18,12 +24,14 @@
 		<Breadcrumb.Root class="hidden sm:block">
 			<Breadcrumb.List>
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href="#">Building Your Application</Breadcrumb.Link>
+					Dashboard
 				</Breadcrumb.Item>
-				<Breadcrumb.Separator />
-				<Breadcrumb.Item>
-					<Breadcrumb.Page>Data Fetching</Breadcrumb.Page>
-				</Breadcrumb.Item>
+				{#each props.sub ?? [] as segment}
+					<Breadcrumb.Separator />
+					<Breadcrumb.Item>
+						{segment}
+					</Breadcrumb.Item>
+				{/each}
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
 		<!-- <SearchForm class="w-full sm:ml-auto sm:w-auto" /> -->

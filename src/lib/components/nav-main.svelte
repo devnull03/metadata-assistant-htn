@@ -3,9 +3,10 @@
 	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
 	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
 	import * as Collapsible from "$lib/components/ui/collapsible/index.js";
+	import { curMode } from "$lib/stores";
 
 	let {
-		items,
+		items
 	}: {
 		items: {
 			title: string;
@@ -24,7 +25,7 @@
 	<Sidebar.GroupLabel>Platform</Sidebar.GroupLabel>
 	<Sidebar.Menu>
 		{#each items as item (item.title)}
-			<Collapsible.Root open={item.isActive}>
+			<Collapsible.Root open={item.isActive || $curMode === item.title.toLowerCase()}>
 				{#snippet child({ props })}
 					<Sidebar.MenuItem {...props}>
 						<Sidebar.MenuButton tooltipContent={item.title}>
@@ -38,10 +39,7 @@
 						{#if item.items?.length}
 							<Collapsible.Trigger>
 								{#snippet child({ props })}
-									<Sidebar.MenuAction
-										{...props}
-										class="data-[state=open]:rotate-90"
-									>
+									<Sidebar.MenuAction {...props} class="data-[state=open]:rotate-90">
 										<ChevronRightIcon />
 										<span class="sr-only">Toggle</span>
 									</Sidebar.MenuAction>

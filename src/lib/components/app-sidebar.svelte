@@ -2,136 +2,62 @@
 	import SquareTerminalIcon from "@lucide/svelte/icons/square-terminal";
 	import BotIcon from "@lucide/svelte/icons/bot";
 	import BookOpenIcon from "@lucide/svelte/icons/book-open";
-	import Settings2Icon from "@lucide/svelte/icons/settings-2";
 	import LifeBuoyIcon from "@lucide/svelte/icons/life-buoy";
 	import SendIcon from "@lucide/svelte/icons/send";
 	import FrameIcon from "@lucide/svelte/icons/frame";
-	import PieChartIcon from "@lucide/svelte/icons/pie-chart";
-	import MapIcon from "@lucide/svelte/icons/map";
 	import CommandIcon from "@lucide/svelte/icons/command";
 
 	const data = {
 		user: {
 			name: "shadcn",
 			email: "m@example.com",
-			avatar: "",
+			avatar: ""
 		},
 		navMain: [
 			{
-				title: "Playground",
-				url: "#",
-				icon: SquareTerminalIcon,
-				isActive: true,
-				items: [
-					{
-						title: "History",
-						url: "#",
-					},
-					{
-						title: "Starred",
-						url: "#",
-					},
-					{
-						title: "Settings",
-						url: "#",
-					},
-				],
+				title: "Assist",
+				url: resolve("/dashboard/assist"),
+				icon: SquareTerminalIcon
 			},
 			{
-				title: "Models",
-				url: "#",
-				icon: BotIcon,
-				items: [
-					{
-						title: "Genesis",
-						url: "#",
-					},
-					{
-						title: "Explorer",
-						url: "#",
-					},
-					{
-						title: "Quantum",
-						url: "#",
-					},
-				],
+				title: "Review",
+				url: resolve("/dashboard/review"),
+				icon: BotIcon
 			},
 			{
-				title: "Documentation",
+				title: "Docs",
 				url: "#",
-				icon: BookOpenIcon,
-				items: [
-					{
-						title: "Introduction",
-						url: "#",
-					},
-					{
-						title: "Get Started",
-						url: "#",
-					},
-					{
-						title: "Tutorials",
-						url: "#",
-					},
-					{
-						title: "Changelog",
-						url: "#",
-					},
-				],
+				icon: BookOpenIcon
 			},
 			{
-				title: "Settings",
-				url: "#",
-				icon: Settings2Icon,
-				items: [
-					{
-						title: "General",
-						url: "#",
-					},
-					{
-						title: "Team",
-						url: "#",
-					},
-					{
-						title: "Billing",
-						url: "#",
-					},
-					{
-						title: "Limits",
-						url: "#",
-					},
-				],
-			},
+				title: "Visualize",
+				url: resolve("/dashboard/visualize"),
+				icon: ChartPie
+			}	
+
 		],
+
 		navSecondary: [
 			{
 				title: "Support",
 				url: "#",
-				icon: LifeBuoyIcon,
+				icon: LifeBuoyIcon
 			},
 			{
 				title: "Feedback",
 				url: "#",
-				icon: SendIcon,
-			},
+				icon: SendIcon
+			}
 		],
+
 		projects: [
 			{
-				name: "Design Engineering",
+				name: "Default Local",
 				url: "#",
-				icon: FrameIcon,
+				icon: FrameIcon
 			},
-			{
-				name: "Sales & Marketing",
-				url: "#",
-				icon: PieChartIcon,
-			},
-			{
-				name: "Travel",
-				url: "#",
-				icon: MapIcon,
-			},
-		],
+
+		]
 	};
 </script>
 
@@ -142,6 +68,8 @@
 	import NavProjects from "./nav-projects.svelte";
 	import NavSecondary from "./nav-secondary.svelte";
 	import NavUser from "./nav-user.svelte";
+	import { resolve } from "$app/paths";
+	import ChartPie from "@lucide/svelte/icons/pie-chart";
 
 	let { ref = $bindable(null), ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
 </script>
@@ -159,7 +87,7 @@
 								<CommandIcon class="size-4" />
 							</div>
 							<div class="grid flex-1 text-left text-sm leading-tight">
-								<span class="truncate font-medium">Acme Inc</span>
+								<span class="truncate font-medium">qrate</span>
 								<span class="truncate text-xs">Enterprise</span>
 							</div>
 						</a>
@@ -173,7 +101,7 @@
 		<NavProjects projects={data.projects} />
 		<NavSecondary items={data.navSecondary} class="mt-auto" />
 	</Sidebar.Content>
-	<Sidebar.Footer>
+	<!-- <Sidebar.Footer>
 		<NavUser user={data.user} />
-	</Sidebar.Footer>
+	</Sidebar.Footer> -->
 </Sidebar.Root>

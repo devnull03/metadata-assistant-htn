@@ -1,4 +1,4 @@
-import queryCohere from '$lib/server/server';
+import { queryCohere } from '$lib/server/server';
 import { query } from '$app/server';
 
 

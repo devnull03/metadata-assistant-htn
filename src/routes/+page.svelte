@@ -51,6 +51,8 @@
 	}
 	h2 {
 		font-size: 2em;
+		text-align: justify;
+		margin: 0 2em;
 		line-height: 1em;
 	}
 </style>

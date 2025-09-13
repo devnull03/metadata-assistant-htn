@@ -3,7 +3,7 @@
 		<section>
 			<h1>qrate</h1>
 			<h2>Your <b>reliable</b> assistant for <b>streamlining</b> digital asset indexing</h2>
-			<button><a href="./dashboard/new">Create Project</a></button>
+			<button><a href="./new">Create Project</a></button>
 		</section>
 	</article>
 </main>

@@ -1,36 +1,16 @@
 <script lang="ts">
+  let result = '';
 
-    import { CohereClientV2 } from 'cohere-ai';
-    const cohere = new CohereClientV2({
-        token: "COHERE_API_KEY",
+  async function callEndpoint() {
+    const res = await fetch('/api/assistant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: 'Describe the logo!' })
     });
-    export async function queryCohere() {
-        const response = await cohere.chat({
-            model: 'command-a-vision-07-2025',
-            messages: [
-            {
-                role: 'user',
-                content: [
-                { type: 'text', text: 'Describe the logo!' },
-                {
-                    type: 'image_url',
-                    imageUrl: {
-                    url: 'https://cohere.com/favicon-32x32.png',
-                    detail: 'auto',
-                    },
-                },
-                ],
-            },
-            ],
-        });
-
-        console.log(response.message.content);
-        return response.message.content;
-}
-    import { onMount } from "svelte";
-    onMount(async () => {
-        await queryCohere();
-    });
+    const data = await res.json();
+    result = JSON.stringify(data, null, 2);
+  }
 </script>
 
-<h1>Recent posts</h1>
+<button on:click={callEndpoint}>Call Assistant</button>
+<pre>{result}</pre>

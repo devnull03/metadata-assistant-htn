@@ -5,7 +5,7 @@ import { CohereClientV2 } from 'cohere-ai';
 const cohere = new CohereClientV2({
   token: COHERE_API_KEY,
 });
-(async () => {
+export async function queryCohere() {
   const response = await cohere.chat({
     model: 'command-a-vision-07-2025',
     messages: [
@@ -24,5 +24,7 @@ const cohere = new CohereClientV2({
       },
     ],
   });
-  console.log(response.message.content[0].text);
-})();
+
+  console.log(response.message.content);
+  return response.message.content;
+}

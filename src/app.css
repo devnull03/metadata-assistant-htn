@@ -4,7 +4,7 @@
 
 @import "tw-animate-css";
 
-@import "./realapp.css" @custom-variant dark (&: is(.dark *));
+@custom-variant dark (&: is(.dark *));
 
 :root {
 	--radius: 0.625rem;
@@ -120,4 +120,9 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+}
+
+:root {
+	--dark: #880d1eff;
+	--light: #fdfaf1ff;
 }

@@ -126,3 +126,7 @@
 	--dark: #880d1eff;
 	--light: #fdfaf1ff;
 }
+
+* {
+	font-family: "Poppins", sans-serif;
+}

@@ -5,7 +5,7 @@ export const getUploadedFiles = async() => {
 	if (!dir) return null;
 	const entries: [string, FileSystemFileHandle][] = [];
 	for await (const entry of dir.entries()) {
-		if (entry[1].kind !== "directory") continue;
+		if (entry[1].kind !== "file") continue;
 		entries.push(entry as [string, FileSystemFileHandle])
 	}
 	return entries;

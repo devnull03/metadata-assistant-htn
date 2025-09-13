@@ -1,15 +1,39 @@
 <script lang="ts">
-	import { getUploadedFiles } from "$lib/utils/files";
-	import * as kv from "idb-keyval";
-	const folder = await getUploadedFiles();
-	const selectFolder = async () => {
-		const dir = await showDirectoryPicker();
-		console.log(dir);
-		await kv.set("test1", dir);
-		console.log(await kv.get("test1"));
-	};
-	const files = 
+	import ProjectButtons from "./projectbuttons.svelte";
 </script>
 
-<button onclick={selectFolder}>select folder</button>
+<main>
+	<article>
+		<h1>Select Project</h1>
+		<svelte:boundary>
+			{#snippet pending()}
+				<p>loading...</p>
+			{/snippet}
+			<ProjectButtons />
+		</svelte:boundary>
+	</article>
+</main>
 
+<style>
+	article {
+		background-color: var(--light);
+		padding: 1em;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 2em;
+	}
+	main {
+		background-color: var(--dark);
+		height: 100vh;
+		width: 100%;
+		margin: 0;
+		padding: 1em;
+	}
+	h1 {
+		font-size: 3em;
+		font-weight: bold;
+	}
+</style>

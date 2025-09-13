@@ -1,2 +1,8 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<h1>NAME HERE</h1>
+<h2>Something something</h2>
+
+<style>
+	h1 {
+		font-size: 20em;
+	}
+</style>

@@ -66,7 +66,7 @@
 						<!-- Action button for marking todo/done -->
 						<Button
 							size="sm"
-							variant={isDoneSection ? "secondary" : "default"}
+							variant="default"
 							onclick={(e) => {
 								e.stopPropagation();
 								const originalIndex = originalIndices[index];

@@ -1,17 +1,30 @@
 <script lang="ts">
 	import type { Sheet } from "$lib/interfaces/sheet.interface";
 	import { Skeleton } from "$lib/components/ui/skeleton";
+	import { Button } from "$lib/components/ui/button";
 
 	interface Props {
 		items: Sheet;
 		imagesLoading: boolean;
-		onViewItemClick?: (img: string, itemFields: Record<string, any> | null, filename: string) => void;
+		onViewItemClick?: (
+			img: string,
+			itemFields: Record<string, any> | null,
+			filename: string
+		) => void;
+		moveToCompleted?: (index: number) => void;
+		moveToTodo?: (index: number) => void;
+		isDoneSection?: boolean;
+		originalIndices?: number[];
 	}
 
 	let {
 		items = $bindable(),
 		imagesLoading = true,
-		onViewItemClick: onItemClick = $bindable()
+		onViewItemClick: onItemClick = $bindable(),
+		moveToCompleted = $bindable(() => {}),
+		moveToTodo = $bindable(() => {}),
+		isDoneSection = false,
+		originalIndices = []
 	}: Props = $props();
 
 	async function handleItemClick(imageRecord: any) {
@@ -48,7 +61,24 @@
 							alt={file.name}
 							class="w-full h-48 object-cover rounded-md mb-2"
 						/>
-						<p class="text-sm text-center break-all">{file.name}</p>
+						<p class="text-sm text-center break-all mb-2">{file.name}</p>
+
+						<!-- Action button for marking todo/done -->
+						<Button
+							size="sm"
+							variant={isDoneSection ? "secondary" : "default"}
+							onclick={(e) => {
+								e.stopPropagation();
+								const originalIndex = originalIndices[index];
+								if (isDoneSection && moveToTodo) {
+									moveToTodo(originalIndex);
+								} else if (!isDoneSection && moveToCompleted) {
+									moveToCompleted(originalIndex);
+								}
+							}}
+						>
+							{isDoneSection ? "Mark Todo" : "Mark Done"}
+						</Button>
 					</button>
 				{:catch error}
 					<div class="text-red-500">Error loading image</div>

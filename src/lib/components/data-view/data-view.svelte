@@ -10,8 +10,13 @@
 		items: Sheet;
 		imagesLoading?: boolean;
 		mode?: "grid" | "spreadsheet";
-		onItemClick?: (img: string, itemFields: Record<string, any> | null,filename: string) => void;
+		onItemClick?: (img: string, itemFields: Record<string, any> | null, filename: string) => void;
 		questions?: Array<{ label: string; value: string }>;
+		editingApi?: any;
+		moveToCompleted?: (index: number) => void;
+		moveToTodo?: (index: number) => void;
+		isDoneSection?: boolean;
+		originalIndices?: number[];
 	}
 	let {
 		ref = $bindable(null),
@@ -20,6 +25,11 @@
 		mode = $bindable("grid"),
 		onItemClick = $bindable(() => {}),
 		questions,
+		editingApi = $bindable(null),
+		moveToCompleted = $bindable(() => {}),
+		moveToTodo = $bindable(() => {}),
+		isDoneSection = false,
+		originalIndices = [],
 		...restProps
 	}: DataViewProps = $props();
 </script>
@@ -31,10 +41,26 @@
 			<Tabs.Trigger value="spreadsheet"><AlignJustify /></Tabs.Trigger>
 		</Tabs.List>
 		<Tabs.Content value="grid">
-			<Grid bind:items {imagesLoading} onViewItemClick={onItemClick} />
+			<Grid
+				bind:items
+				{imagesLoading}
+				onViewItemClick={onItemClick}
+				{moveToCompleted}
+				{moveToTodo}
+				{isDoneSection}
+				{originalIndices}
+			/>
 		</Tabs.Content>
 		<Tabs.Content value="spreadsheet">
-			<Spreadsheet bind:items onViewItemClick={onItemClick} />
+			<Spreadsheet
+				bind:items
+				onViewItemClick={onItemClick}
+				{editingApi}
+				{moveToCompleted}
+				{moveToTodo}
+				{isDoneSection}
+				{originalIndices}
+			/>
 		</Tabs.Content>
 	</Tabs.Root>
 </div>

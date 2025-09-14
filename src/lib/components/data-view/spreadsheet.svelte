@@ -397,7 +397,13 @@
 									class="w-6 h-6 flex items-center justify-center rounded hover:bg-muted transition-colors mx-auto"
 									onclick={(e) => {
 										if (onItemClick && items?.rows[rowIndex]) {
-											onItemClick(items.rows[rowIndex]);
+											console.log('Expand clicked for row:', rowIndex, items.rows[rowIndex]);
+
+											let image = items.images.find(img => img[0] === items.rows[rowIndex].file);
+
+											console.log(image)
+											
+											onItemClick(image);
 										}
 									}}
 									aria-label={`Expand row ${rowIndex + 1}`}

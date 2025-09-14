@@ -3,45 +3,85 @@
 	import DataView from "$lib/components/data-view/data-view.svelte";
 	import { ChevronDown, ChevronRight } from "@lucide/svelte";
 	import type { Sheet } from "$lib/interfaces/sheet.interface";
+	import { getUploadedFiles } from "$lib/utils/files";
+	import { onMount } from "svelte";
+	import ItemViewModal from "$lib/components/item-view-modal/item-view-modal.svelte";
 
-	// Sample data for each section - replace with your actual data
-	let todoData: Sheet = {
+	let mockdata: Sheet = $state({
 		fields: [
-			{ title: "Task", instructions: "Task description" },
-			{ title: "Priority", instructions: "Task priority" },
-			{ title: "Assignee", instructions: "Person assigned" }
+			{ title: "Task" },
+			{ title: "Description" },
+			{ title: "Due Date" },
+			{ title: "Priority" }
 		],
 		rows: [
-			{ Task: "Review metadata schema", Priority: "High", Assignee: "John" },
-			{ Task: "Update documentation", Priority: "Medium", Assignee: "Jane" }
-		]
-	};
-
-	let inProgressData: Sheet = {
-		fields: [
-			{ title: "Task", instructions: "Task description" },
-			{ title: "Priority", instructions: "Task priority" },
-			{ title: "Assignee", instructions: "Person assigned" }
+			{
+				Task: "Design Homepage",
+				Description: "Create wireframes and mockups for the new homepage.",
+				"Due Date": "2024-10-01",
+				Priority: "High"
+			},
+			{
+				Task: "Develop API",
+				Description: "Build the RESTful API for the mobile app.",
+				"Due Date": "2024-10-05",
+				Priority: "Medium"
+			},
+			{
+				Task: "Write Documentation",
+				Description: "Document the new features and API endpoints.",
+				"Due Date": "2024-10-07",
+				Priority: "Low"
+			},
+			{
+				Task: "Test Application",
+				Description: "Perform unit and integration testing.",
+				"Due Date": "2024-10-10",
+				Priority: "High"
+			},
+			{
+				Task: "Deploy to Production",
+				Description: "Deploy the latest version to the production environment.",
+				"Due Date": "2024-10-12",
+				Priority: "Medium"
+			}
 		],
-		rows: [{ Task: "Implementing AI assistant", Priority: "High", Assignee: "Mike" }]
-	};
+		images: []
+	});
 
-	let doneData: Sheet = {
-		fields: [
-			{ title: "Task", instructions: "Task description" },
-			{ title: "Priority", instructions: "Task priority" },
-			{ title: "Assignee", instructions: "Person assigned" }
-		],
-		rows: [
-			{ Task: "Setup project structure", Priority: "High", Assignee: "Sarah" },
-			{ Task: "Design UI mockups", Priority: "Medium", Assignee: "Alex" }
-		]
-	};
+	let todoRows: number[] = $state(Array.from({ length: mockdata.rows.length }, (_, i) => i));
+	let inProgressRows: number[] = $state([]);
+	let doneRows: number[] = $state([]);
 
-	// Collapsible states
+	let todoData: Sheet = $derived({
+		fields: mockdata.fields,
+		rows: mockdata.rows?.filter((_, i) => todoRows.includes(i)) || [],
+		images: mockdata.images?.filter((_, i) => todoRows.includes(i)) || []
+	});
+
+	let inProgressData: Sheet = $derived({
+		fields: mockdata.fields,
+		rows: mockdata.rows?.filter((_, i) => inProgressRows.includes(i)) || [],
+		images: mockdata.images?.filter((_, i) => inProgressRows.includes(i)) || []
+	});
+
+	let doneData: Sheet = $derived({
+		fields: mockdata.fields,
+		rows: mockdata.rows?.filter((_, i) => doneRows.includes(i)) || [],
+		images: mockdata.images?.filter((_, i) => doneRows.includes(i)) || []
+	});
+
 	let todoOpen = $state(true);
 	let inProgressOpen = $state(true);
 	let doneOpen = $state(true);
+
+	$inspect(mockdata);
+
+	onMount(async () => {
+		mockdata.images = (await getUploadedFiles()) || [];
+		mockdata = mockdata;
+		// console.log(mockdata.images);
+	});
 </script>
 
 <div class="p-4 max-w-full">
@@ -67,7 +107,7 @@
 				</Collapsible.Trigger>
 				<Collapsible.Content class="max-h-96 overflow-y-auto">
 					<div class="p-4">
-						<DataView items={todoData} />
+						<DataView bind:items={todoData} />
 					</div>
 				</Collapsible.Content>
 			</Collapsible.Root>
@@ -92,7 +132,7 @@
 				</Collapsible.Trigger>
 				<Collapsible.Content class="max-h-96 overflow-y-auto">
 					<div class="p-4">
-						<DataView items={inProgressData} />
+						<DataView bind:items={inProgressData} />
 					</div>
 				</Collapsible.Content>
 			</Collapsible.Root>
@@ -117,7 +157,7 @@
 				</Collapsible.Trigger>
 				<Collapsible.Content class="max-h-96 overflow-y-auto">
 					<div class="p-4">
-						<DataView items={doneData} />
+						<DataView bind:items={doneData} />
 					</div>
 				</Collapsible.Content>
 			</Collapsible.Root>

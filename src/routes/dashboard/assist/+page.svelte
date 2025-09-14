@@ -7,6 +7,7 @@
 	import { onMount } from "svelte";
 	import type { PageData } from "./$types";
 	import ItemViewModal from "$lib/components/item-view-modal/item-view-modal.svelte";
+	import { createSpreadsheetEditingAPI } from "$lib/utils/files";
 
 	let data: PageData = $props();
 
@@ -43,6 +44,10 @@
 		images: actualSheet.images?.filter((_, i) => doneRows.includes(i)) || []
 	});
 
+	// Get the original indices for the filtered arrays
+	let todoOriginalIndices = $derived(todoRows);
+	let doneOriginalIndices = $derived(doneRows);
+
 	let todoOpen = $state(true);
 	let doneOpen = $state(true);
 
@@ -68,22 +73,6 @@
 			loading = false;
 		}
 	});
-
-	// Auto-save changes to project
-	// $effect(() => {
-	// 	if (sheet_data && !loading) {
-	// 		// Debounce saves to avoid excessive writes
-	// 		const timeoutId = setTimeout(async () => {
-	// 			try {
-	// 				await saveProject(sheet_data);
-	// 			} catch (err) {
-	// 				console.error("Failed to save project:", err);
-	// 			}
-	// 		}, 1000);
-
-	// 		return () => clearTimeout(timeoutId);
-	// 	}
-	// });
 
 	// Move item from todo to done
 	function moveToCompleted(index: number) {
@@ -146,6 +135,8 @@
 		itemFields: Record<string, any> | null;
 		filename: string;
 	} | null>(null);
+
+	let editingApi = $derived(createSpreadsheetEditingAPI(actualSheet));
 </script>
 
 {#if itemViewModalData}
@@ -208,6 +199,11 @@
 									bind:items={todoData}
 									imagesLoading={false}
 									{onItemClick}
+									{editingApi}
+									{moveToCompleted}
+									{moveToTodo}
+									isDoneSection={false}
+									originalIndices={todoOriginalIndices}
 								/>
 							</div>
 							<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -250,6 +246,11 @@
 									bind:items={doneData}
 									imagesLoading={false}
 									{onItemClick}
+									{editingApi}
+									{moveToCompleted}
+									{moveToTodo}
+									isDoneSection={true}
+									originalIndices={doneOriginalIndices}
 								/>
 							</div>
 							<!-- svelte-ignore a11y_no_static_element_interactions -->

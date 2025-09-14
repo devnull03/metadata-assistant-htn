@@ -22,14 +22,28 @@
 		items: Sheet;
 		config?: Partial<SpreadsheetConfig>;
 		class?: string;
-		onViewItemClick?: (img: string, itemFields: Record<string, any> | null) => void;
+		onViewItemClick?: (
+			img: string,
+			itemFields: Record<string, any> | null,
+			filename: string
+		) => void;
+		editingApi?: any;
+		moveToCompleted?: (index: number) => void;
+		moveToTodo?: (index: number) => void;
+		isDoneSection?: boolean;
+		originalIndices?: number[];
 	}
 
 	let {
 		items = $bindable(),
 		config = {},
 		class: className,
-		onViewItemClick: onItemClick = $bindable()
+		onViewItemClick: onItemClick = $bindable(),
+		editingApi = $bindable(null),
+		moveToCompleted = $bindable(() => {}),
+		moveToTodo = $bindable(() => {}),
+		isDoneSection = false,
+		originalIndices = []
 	}: Props = $props();
 
 	// Focus action for better accessibility
@@ -76,6 +90,7 @@
 	let editing = $state<[number, number] | null>(null);
 	let shiftPressed = $state(false);
 	let ctrlPressed = $state(false);
+	let validationErrors = $state<Record<string, string>>({});
 
 	// Column resizing state
 	let columnWidths = $state<Record<number, number>>({});
@@ -136,9 +151,28 @@
 	}
 
 	function handleInputChange(value: string, colIndex: number, rowIndex: number) {
-		if (!spreadsheetData) return;
+		if (!spreadsheetData || !editingApi) return;
 
-		// Update the data
+		// Get the field name for this column
+		const fieldName = items.fields[colIndex]?.title;
+		if (!fieldName) return;
+
+		// Clear previous validation error for this cell
+		const cellKey = `${rowIndex}-${colIndex}`;
+		delete validationErrors[cellKey];
+		validationErrors = { ...validationErrors };
+
+		// Use the editing API to update the cell with validation
+		editingApi.editCell(rowIndex, fieldName, value).then((result: any) => {
+			if (!result.success) {
+				console.warn("Cell edit failed:", result.error);
+				// Store validation error for this cell
+				validationErrors[cellKey] = result.error;
+				validationErrors = { ...validationErrors };
+			}
+		});
+
+		// Also update local spreadsheet data for immediate UI feedback
 		if (!spreadsheetData.data[rowIndex]) {
 			spreadsheetData.data[rowIndex] = [];
 		}
@@ -150,6 +184,27 @@
 
 	function handleInputBlur() {
 		editing = null;
+	}
+
+	// Validate a cell value before committing
+	function validateCellInput(value: string, colIndex: number, rowIndex: number): boolean {
+		if (!editingApi) return true;
+
+		const fieldName = items.fields[colIndex]?.title;
+		if (!fieldName) return true;
+
+		const validation = editingApi.validateValue(fieldName, value);
+		const cellKey = `${rowIndex}-${colIndex}`;
+
+		if (!validation.isValid) {
+			validationErrors[cellKey] = validation.error;
+			validationErrors = { ...validationErrors };
+			return false;
+		} else {
+			delete validationErrors[cellKey];
+			validationErrors = { ...validationErrors };
+			return true;
+		}
 	}
 
 	function handleKeyDown(event: KeyboardEvent) {
@@ -181,14 +236,54 @@
 					break;
 				case "v":
 					event.preventDefault();
-					if (clipboard && selected && spreadsheetData) {
+					if (clipboard && selected && spreadsheetData && editingApi) {
+						// Use editing API for paste operations with validation
+						const clipboardBounds = getBorder(clipboard);
+						const selectedBounds = getBorder(selected);
+
+						const edits = [];
+						for (let r = selectedBounds.tl.r; r <= selectedBounds.br.r; r++) {
+							for (let c = selectedBounds.tl.c; c <= selectedBounds.br.c; c++) {
+								const sourceR =
+									clipboardBounds.tl.r +
+									((r - selectedBounds.tl.r) % (clipboardBounds.br.r - clipboardBounds.tl.r + 1));
+								const sourceC =
+									clipboardBounds.tl.c +
+									((c - selectedBounds.tl.c) % (clipboardBounds.br.c - clipboardBounds.tl.c + 1));
+								const sourceValue = spreadsheetData.data[sourceR]?.[sourceC] || "";
+								const fieldName = items.fields[c]?.title;
+
+								if (fieldName) {
+									edits.push({ rowIndex: r, fieldName, value: sourceValue });
+								}
+							}
+						}
+
+						// Use batch edit for better performance
+						editingApi.batchEdit(edits);
+
+						// Also update local data for immediate UI feedback
 						spreadsheetData.data = pasteSelection(spreadsheetData.data, clipboard, selected);
 					}
 					break;
 				case "x":
 					event.preventDefault();
 					clipboard = selected;
-					if (selected && spreadsheetData) {
+					if (selected && spreadsheetData && editingApi) {
+						// Use editing API for cut operations
+						const bounds = getBorder(selected);
+						const edits = [];
+
+						for (let r = bounds.tl.r; r <= bounds.br.r; r++) {
+							for (let c = bounds.tl.c; c <= bounds.br.c; c++) {
+								const fieldName = items.fields[c]?.title;
+								if (fieldName) {
+									edits.push({ rowIndex: r, fieldName, value: "" });
+								}
+							}
+						}
+
+						editingApi.batchEdit(edits);
 						spreadsheetData.data = clearSelection(spreadsheetData.data, selected);
 					}
 					break;
@@ -196,8 +291,23 @@
 		}
 
 		// Handle delete
-		if (event.key === "Delete" && selected && spreadsheetData) {
+		if (event.key === "Delete" && selected && spreadsheetData && editingApi) {
 			event.preventDefault();
+
+			// Use editing API for delete operations
+			const bounds = getBorder(selected);
+			const edits = [];
+
+			for (let r = bounds.tl.r; r <= bounds.br.r; r++) {
+				for (let c = bounds.tl.c; c <= bounds.br.c; c++) {
+					const fieldName = items.fields[c]?.title;
+					if (fieldName) {
+						edits.push({ rowIndex: r, fieldName, value: "" });
+					}
+				}
+			}
+
+			editingApi.batchEdit(edits);
 			spreadsheetData.data = clearSelection(spreadsheetData.data, selected);
 		}
 
@@ -348,7 +458,7 @@
 						<th class="w-12 h-8 border-r border-b bg-muted text-center"></th>
 
 						<!-- Expand button header -->
-						<th class="w-10 h-8 border-r border-b bg-muted text-center"></th>
+						<th class="w-16 h-8 border-r border-b bg-muted text-center text-xs">Action</th>
 
 						<!-- Column headers -->
 						{#each spreadsheetData.columns as column, colIndex}
@@ -364,6 +474,7 @@
 								{column.title || encodeCol(colIndex)}
 
 								<!-- Resize handle -->
+								<!-- svelte-ignore a11y_no_static_element_interactions -->
 								<div
 									class="absolute right-0 top-0 w-2 h-full cursor-col-resize hover:bg-primary/30 transition-colors"
 									onmousedown={(e) => handleResizeStart(e, colIndex)}
@@ -390,42 +501,69 @@
 								{rowIndex + 1}
 							</td>
 
-							<!-- Expand button -->
-							<td class="w-10 h-8 border-r border-b bg-background text-center p-1">
-								<button
-									type="button"
-									class="w-6 h-6 flex items-center justify-center rounded hover:bg-muted transition-colors mx-auto"
-									onclick={async (e) => {
-										if (onItemClick && items?.rows[rowIndex]) {
-											console.log("Expand clicked for row:", rowIndex, items.rows[rowIndex]);
+							<!-- Expand button and checkbox -->
+							<td class="w-16 h-8 border-r border-b bg-background text-center p-1">
+								<div class="flex items-center justify-center gap-1">
+									<!-- Checkbox for todo/done -->
+									<input
+										type="checkbox"
+										checked={isDoneSection}
+										onchange={(e) => {
+											const target = e.target as HTMLInputElement;
+											const originalIndex = originalIndices?.[rowIndex] ?? rowIndex;
+											if (target.checked && moveToCompleted) {
+												moveToCompleted(originalIndex);
+											} else if (!target.checked && moveToTodo) {
+												moveToTodo(originalIndex);
+											}
+										}}
+										class="w-3 h-3"
+										title={isDoneSection ? "Mark as Todo" : "Mark as Done"}
+									/>
 
-											let image = items.images.find((img) => img[0] === items.rows[rowIndex].file);
+									<!-- Expand button -->
+									<button
+										type="button"
+										class="w-6 h-6 flex items-center justify-center rounded hover:bg-muted transition-colors"
+										onclick={async (e) => {
+											if (onItemClick && items?.rows[rowIndex]) {
+												console.log("Expand clicked for row:", rowIndex, items.rows[rowIndex]);
 
-											console.log(image);
+												let image = items.images.find(
+													(img) => img[0] === items.rows[rowIndex].file
+												);
 
-											if (image) {
-												const file = await image[1].getFile();
-												if (file) {
-													const img = URL.createObjectURL(file);
-													const itemFields = image[1].metadata || null;
-													onItemClick(img, itemFields);
+												console.log(image);
+
+												if (image) {
+													const file = await image[1].getFile();
+													if (file) {
+														const img = URL.createObjectURL(file);
+														const itemFields = items.rows.find(
+															(row) => row.file === items.rows[rowIndex].file
+														) as Record<string, any> | null;
+														onItemClick(img, itemFields, image[0]);
+													}
 												}
 											}
-										}
-									}}
-									aria-label={`Expand row ${rowIndex + 1}`}
-								>
-									<Expand class="size-4" />
-								</button>
+										}}
+										aria-label={`Expand row ${rowIndex + 1}`}
+									>
+										<Expand class="size-3" />
+									</button>
+								</div>
 							</td>
 
 							<!-- Data cells -->
 							{#each spreadsheetData.columns as column, colIndex}
+								{@const cellKey = `${rowIndex}-${colIndex}`}
+								{@const hasValidationError = validationErrors[cellKey]}
 								<td
 									class={cn(
 										"h-8 border-r border-b p-0 relative",
 										isCellSelected(colIndex, rowIndex) && "bg-primary/10",
-										editing?.[0] === colIndex && editing?.[1] === rowIndex && "bg-primary/20"
+										editing?.[0] === colIndex && editing?.[1] === rowIndex && "bg-primary/20",
+										hasValidationError && "bg-destructive/10 border-destructive/50"
 									)}
 									style={`width: ${getCurrentColumnWidth(colIndex)}; max-width: ${getCurrentColumnWidth(colIndex)}; ${computeStyles(
 										colIndex,
@@ -440,20 +578,33 @@
 									ondblclick={() => handleCellDoubleClick(colIndex, rowIndex)}
 									role="gridcell"
 									tabindex="-1"
+									title={hasValidationError ? `Validation Error: ${hasValidationError}` : undefined}
 								>
 									{#if editing?.[0] === colIndex && editing?.[1] === rowIndex}
 										<input
 											type="text"
 											value={row[colIndex] || ""}
-											class="w-full h-full px-2 text-sm border-0 bg-transparent focus:outline-none focus:ring-2 focus:ring-primary/50"
+											class={cn(
+												"w-full h-full px-2 text-sm border-0 bg-transparent focus:outline-none focus:ring-2 focus:ring-primary/50",
+												hasValidationError && "text-destructive focus:ring-destructive/50"
+											)}
 											oninput={(e) => handleInputChange(e.currentTarget.value, colIndex, rowIndex)}
 											onblur={handleInputBlur}
 											use:focus
 										/>
 									{:else}
 										<div class="px-2 py-1 text-sm w-full h-full flex items-center overflow-hidden">
-											<span class="truncate">{row[colIndex] || ""}</span>
+											<span class={cn("truncate", hasValidationError && "text-destructive")}>
+												{row[colIndex] || ""}
+											</span>
 										</div>
+									{/if}
+
+									<!-- Validation error indicator -->
+									{#if hasValidationError}
+										<div
+											class="absolute top-0 right-0 w-2 h-2 bg-destructive rounded-full transform translate-x-1 -translate-y-1"
+										></div>
 									{/if}
 								</td>
 							{/each}

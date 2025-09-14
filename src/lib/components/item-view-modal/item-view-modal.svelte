@@ -1,26 +1,28 @@
 <script lang="ts">
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
-	import { Input } from "$lib/components/ui/input/index.js";
-	import { Label } from "$lib/components/ui/label/index.js";
 	import * as kv from "idb-keyval";
 	import { getUploadedFiles } from "$lib/utils/files";
 
-	// Props interface for type safety
 	interface ItemViewModalProps {
 		isOpen: boolean;
 		img?: string;
 		itemFields: Record<string, any> | null;
 		filename: string;
+		editingApi?: any;
 	}
 
-	// Get props in legacy mode
-	let { isOpen = $bindable(false), img, itemFields, filename }: ItemViewModalProps = $props();
+	let {
+		isOpen = $bindable(false),
+		img,
+		itemFields,
+		filename,
+		editingApi
+	}: ItemViewModalProps = $props();
 
 	$inspect(itemFields);
 	let m = $state(false);
 
-	// Use props questions if provided, otherwise fallback to default
 	let questions = $state(
 		(await kv.get("ai-results"))[filename].questions?.map((x) => ({
 			label: x,
@@ -47,8 +49,8 @@
 			await fetch("/api/image", {
 				method: "post",
 				body: JSON.stringify({
-					image: await blobToBase64(f),
-					qna: questions.map((x) => [x.label, x.value])
+					image: await blobToBase64(f as File),
+					qna: questions.map((x: { label: any; value: any }) => [x.label, x.value])
 				})
 			})
 		).json();
@@ -88,7 +90,6 @@
 			</div>
 		</div>
 
-		<!-- Right side - Chat Interface (30%) -->
 		<div class="flex-[0.3] flex flex-col">
 			{#if questions.length >= 1}
 				<Dialog.Header class="p-6 pb-4 border-b">

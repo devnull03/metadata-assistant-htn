@@ -22,7 +22,7 @@
 		items: Sheet;
 		config?: Partial<SpreadsheetConfig>;
 		class?: string;
-		onViewItemClick?: (item: any) => void;
+		onViewItemClick?: (img: string, itemFields: Record<string, any> | null) => void;
 	}
 
 	let {
@@ -395,9 +395,22 @@
 								<button
 									type="button"
 									class="w-6 h-6 flex items-center justify-center rounded hover:bg-muted transition-colors mx-auto"
-									onclick={(e) => {
+									onclick={async (e) => {
 										if (onItemClick && items?.rows[rowIndex]) {
-											onItemClick(items.rows[rowIndex]);
+											console.log("Expand clicked for row:", rowIndex, items.rows[rowIndex]);
+
+											let image = items.images.find((img) => img[0] === items.rows[rowIndex].file);
+
+											console.log(image);
+
+											if (image) {
+												const file = await image[1].getFile();
+												if (file) {
+													const img = URL.createObjectURL(file);
+													const itemFields = image[1].metadata || null;
+													onItemClick(img, itemFields);
+												}
+											}
 										}
 									}}
 									aria-label={`Expand row ${rowIndex + 1}`}

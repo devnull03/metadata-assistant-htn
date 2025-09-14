@@ -5,10 +5,25 @@
 	interface Props {
 		items: Sheet;
 		imagesLoading: boolean;
-		onViewItemClick?: (item: any) => void;
+		onViewItemClick?: (img: string, itemFields: Record<string, any> | null) => void;
 	}
 
-	let { items = $bindable(), imagesLoading = true, onViewItemClick: onItemClick = $bindable() }: Props = $props();
+	let {
+		items = $bindable(),
+		imagesLoading = true,
+		onViewItemClick: onItemClick = $bindable()
+	}: Props = $props();
+
+	async function handleItemClick(imageRecord: any) {
+		if (onItemClick) {
+			const file = await imageRecord[1].getFile();
+			if (file) {
+				const img = URL.createObjectURL(file);
+				const itemFields = items.rows.find((row) => row.file === imageRecord[0]) || null;
+				onItemClick(img, itemFields);
+			}
+		}
+	}
 </script>
 
 <div class="w-full">
@@ -19,11 +34,11 @@
 					<button
 						type="button"
 						class="flex flex-col items-center bg-card p-2 rounded-lg border border-border hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors"
-						onclick={() => onItemClick?.(imageRecord)}
+						onclick={() => handleItemClick(imageRecord)}
 						onkeydown={(e) => {
 							if (e.key === "Enter" || e.key === " ") {
 								e.preventDefault();
-								onItemClick?.(imageRecord);
+								handleItemClick(imageRecord);
 							}
 						}}
 						aria-label={`View image ${file.name}`}

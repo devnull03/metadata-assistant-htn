@@ -3,7 +3,7 @@ import * as kv from "idb-keyval";
 import { queryCohereRemote } from "../../routes/testAPI/data.remote";
 
 export const getUploadedFiles = async () => {
-	const dir = await kv.get("images") as FileSystemDirectoryHandle;
+	const dir = (await kv.get("images")) as FileSystemDirectoryHandle;
 	if (!dir) return null;
 	await dir.requestPermission();
 	const entries = [];
@@ -50,11 +50,14 @@ export interface ImageResponse {
 }
 
 export const getImageRes = async (filename: string, base64: string, qna?: [string, string][]) => {
+	console.log(base64)
 	localStorage.imageRes ||= "{}";
 	const data = (JSON.parse(localStorage.imageRes)[filename] ?? null) as null | ImageResponse;
 	const dat =
-		!data || (!data.is_done && qna) ? await queryCohereRemote({ image: base64, qna }) : data;
+		!data || (!data.is_done && qna)
+			? await (await fetch("/api/image", { method: "post", body: JSON.stringify({ image: base64, qna }) })).json()
+			: data;
 	const temp = JSON.parse(localStorage.imageRes);
-	localStorage.imageRes = { ...temp, [filename]: dat };
+	localStorage.imageRes = JSON.stringify({ ...temp, [filename]: dat });
 	return dat;
 };

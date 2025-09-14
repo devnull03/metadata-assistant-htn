@@ -91,8 +91,8 @@
 
 <ItemViewModalProps {isOpen} {img} {itemFields}></ItemViewModalProps>
 
-<div class="p-4 max-w-full">
-    <h1 class="text-2xl font-bold mb-6">Task Management Board</h1>
+<div class="p-4 max-w-full" >
+    <h1 class="text-2xl font-bold mb-6">Archive Management Board</h1>
 
     <div class="flex flex-col gap-6 w-full">
         <!-- Todo Section -->

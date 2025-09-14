@@ -26,7 +26,7 @@
 			},
 			{
 				title: "Docs",
-				url: "#",
+				url: resolve("/dashboard/docs"),
 				icon: BookOpenIcon
 			},
 			{

@@ -104,7 +104,7 @@
 			<p>
 				{folder.length
 					? "WARNING: This will delete your current project."
-					: "Creates a new project with AI metadata."}
+					: "Creates a new project."}
 			</p>
 		</button>
 	{/if}

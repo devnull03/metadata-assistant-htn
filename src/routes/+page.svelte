@@ -1,15 +1,15 @@
 <main>
 	<article>
 		<section>
-			<img src="/src/lib/assets/favicon.png" alt="qrate Logo" class="logo" />
-			<h1>qrate</h1>
+			<h1><span class="dt">q</span><u>rate</u></h1>
 			<h2>
 				<span>Your reliable workspace</span><br />
 				for <b>streamlining</b> digital asset indexing
 			</h2>
 			<p>
-				<span class="lg">qrate</span> is the quintessential workspace for archivists, curators,
-				librarians, and everyone else who finds themselves often indexing vital information.
+				<span class="lg"><span class="dt">q</span><u>rate</u></span> is the quintessential workspace
+				for archivists, curators, librarians, and everyone else who finds themselves often indexing
+				vital information.
 				<br /><br />
 				Powered by state-of-the-art <span class="lg">cohere</span> multimodal MCP tool-calling vision
 				AI models, we feature stunning accuracy and shockingly efficient processing, ready to save you
@@ -28,6 +28,22 @@
 </main>
 
 <style>
+	.dt {
+		position: relative;
+		&::before {
+			content: "";
+			position: absolute;
+			bottom: 0.09em;
+			left: 0.07em;
+			border-radius: 50%;
+			background-color: var(--dark);
+			width: 0.17em;
+			height: 0.17em;
+		}
+	}
+	u {
+		text-decoration-thickness: 0.17em;
+	}
 	.lg {
 		font-weight: 800;
 	}
@@ -69,7 +85,6 @@
 			conic-gradient(var(--_c), var(--c3) 0) calc(var(--s) / 2) 0,
 			linear-gradient(90deg, var(--c3) 38%, var(--c1) 0 50%, var(--c3) 0 62%, var(--c1) 0);
 		background-size: var(--s) calc(2 * var(--s) / 3);
-
 	}
 
 	@keyframes main {

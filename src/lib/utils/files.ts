@@ -19,3 +19,7 @@ export const getStoredSpreadsheet = async() => {
 export const setStoredSpreadsheet = async(data: any) => {
 	await kv.set("sheet", data);
 }
+export const getImageRes = (filename: string) => {
+	localStorage.imageRes ||= "{}"
+	return (JSON.parse(localStorage.imageRes)[filename] ?? null) as (null) 
+}

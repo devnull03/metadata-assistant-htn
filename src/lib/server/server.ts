@@ -135,7 +135,7 @@ const cohere = new CohereClientV2({
 
 export async function queryCohere(chatHistory: any[]) {
   console.log("Chat History:", chatHistory);
-  
+
   const response = await cohere.chat({
     model: 'command-a-vision-07-2025',
     messages: [

@@ -44,7 +44,6 @@
 		const files = await getUploadedFiles();
 		const f = await files?.find((x) => x[0] === filename)![1].getFile();
 		m = true;
-		questions = [];
 		const res = await (
 			await fetch("/api/image", {
 				method: "post",
@@ -54,6 +53,7 @@
 				})
 			})
 		).json();
+		questions = [];
 		m = false;
 		await kv.set("ai-results", { ...(await kv.get("ai-results")), [filename]: res });
 		itemFields = { ...itemFields, ...res.response.metadata };
@@ -91,7 +91,7 @@
 		</div>
 
 		<div class="flex-[0.3] flex flex-col">
-			{#if questions.length >= 1}
+			{#if questions.length >= 1 && !m}
 				<Dialog.Header class="p-6 pb-4 border-b">
 					<Dialog.Title>Questions</Dialog.Title>
 					<Dialog.Description>Please answer the following questions:</Dialog.Description>

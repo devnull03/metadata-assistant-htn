@@ -1,5 +1,7 @@
 <script lang="ts">
     import { queryCohereRemote } from './data.remote';
+    import { getImageRes } from "$lib/utils/files";
+        
     import { getUploadedFiles } from "$lib/utils/files";
     import * as kv from "idb-keyval";
     let folder = $state<[string, FileSystemFileHandle][]>([]);
@@ -13,7 +15,7 @@
             entries.push(entry);
         }
         // TODO
-        await batchQuery(entries)
+        let results = await batchQuery(entries)
         await kv.set("images", dir);
         location.assign("./dashboard");
     };
@@ -22,16 +24,34 @@
 
 
     async function batchQuery(entries: [string, FileSystemFileHandle | FileSystemDirectoryHandle][]) {
+        let results = [];
         for (const entry of entries) {
             const handle = entry[1];
             if (handle.kind === "file") {
                 const file = await handle.getFile();
-                const arrayBuffer = await file.arrayBuffer();
-                const imageBase64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-                await queryCohereRemote({ image: imageBase64 });
+                const base64 = await blobToBase64(file);
+                let res = [];
+                res = await getImageRes(entry[0], base64);
+                results.push(res);
             }
         }
+
+        return results;
+        
     }
+
+    const blobToBase64 = async (blob: Blob): Promise<string> => {
+        return new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const result = reader.result as string;
+                resolve(result.replace(/^data:image\/[a-z]+;base64,/, ""));
+            };
+            reader.onerror = (err) => reject(err);
+            reader.readAsDataURL(blob);
+    });
+};
+
 </script>
 
 <article>

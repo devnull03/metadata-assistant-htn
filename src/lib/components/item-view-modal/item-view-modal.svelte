@@ -1,8 +1,6 @@
 <script lang="ts">
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
-	import { Input } from "$lib/components/ui/input/index.js";
-	import { Label } from "$lib/components/ui/label/index.js";
 	import * as kv from "idb-keyval";
 	import { getUploadedFiles } from "$lib/utils/files";
 
@@ -21,7 +19,7 @@
 
 	// Use props questions if provided, otherwise fallback to default
 	let questions = $state(
-		(await kv.get("ai-results"))[filename].questions.map((x) => ({
+		(await kv.get("ai-results"))[filename].questions.map((x: any) => ({
 			label: x,
 			value: ""
 		}))
@@ -44,8 +42,8 @@
 			await fetch("/api/image", {
 				method: "post",
 				body: JSON.stringify({
-					image: await blobToBase64(f),
-					qna: questions.map((x) => [x.label, x.value])
+					image: await blobToBase64(f as File),
+					qna: questions.map((x: { label: any; value: any; }) => [x.label, x.value])
 				})
 			})
 		).json();

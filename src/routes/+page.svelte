@@ -1,58 +1,144 @@
 <main>
 	<article>
 		<section>
+			<img src="/src/lib/assets/favicon.png" alt="qrate Logo" class="logo" />
 			<h1>qrate</h1>
-			<h2>Your <b>reliable</b> assistant for <b>streamlining</b> digital asset indexing</h2>
-			<button><a href="./new">Create Project</a></button>
+			<h2>
+				<span>Your reliable assistant</span><br />
+				for <b>streamlining</b> digital asset indexing
+			</h2>
+			<p>
+				<span class="lg">qrate</span> is the quintessential assistant for archivists, curators,
+				librarians, and everyone else who finds themselves often indexing vital information.
+				<br /><br />
+				Powered by state-of-the-art <span class="lg">cohere</span> multimodal MCP tool-calling vision
+				AI models, we feature stunning accuracy and shocking efficient processing.
+			</p>
+			<div class="button-group">
+				<a href="./new" class="cta">Go to Projects</a>
+				<a
+					href="https://archivescanada.ca/wp-content/uploads/2022/08/RADComplete_July2008.pdf"
+					target="_blank"
+					class="secondary">Canadian Archival Standard</a
+				>
+			</div>
 		</section>
 	</article>
 </main>
 
 <style>
+	.lg {
+		font-weight: 800;
+	}
+	:root {
+		--primary: var(--dark);
+		--secondary: var(--dark);
+		--background: var(--light);
+		--text: #2b2b2b;
+		--white: #ffffff;
+		--radius: 12px;
+		--transition: 0.25s ease-in-out;
+	}
+
+	/* Layout */
 	main {
 		display: flex;
-		align-items: center;
 		justify-content: center;
-		height: 100vh;
-		background-color: var(--dark);
-	}
-	button {
-		color: var(--light);
-		background-color: var(--dark);
-		padding: 0.4em 0.8em;
-		border-radius: 0.5em;
-		margin: 2em;
-		font-weight: 400;
-	}
-	section {
-		display: flex;
-		flex-direction: column;
 		align-items: center;
-		justify-content: center;
+		min-height: 100vh;
+		background: var(--dark);
+		padding: 2rem;
+		font-family: system-ui, sans-serif;
+		color: var(--text);
 	}
+
 	article {
-		border-radius: 2em;
-		background-color: #ffffff;
-		--gap: 2em;
-		font-family: "Poppins", sans-serif;
-		display: flex;
-		width: calc(100% - var(--gap) * 2);
-		min-height: calc(100vh - var(--gap) * 2);
-		color: var(--dark);
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
-		position: relative;
-		gap: 2em;
+		background: var(--white);
+		padding: 3rem 4rem;
+		border-radius: var(--radius);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+		text-align: center;
+		width: calc(100vw - 14em);
+		border-top: 6px solid var(--primary);
 	}
+
+	/* Logo */
+	.logo {
+		width: 6em;
+		margin-bottom: -2em;
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	/* Typography */
 	h1 {
-		font-size: 12em;
-		font-weight: 700;
+		font-size: 5.2rem;
+		font-weight: 800;
+		margin: 0.2em 0;
+		color: var(--primary);
 	}
+
 	h2 {
-		font-size: 2em;
-		text-align: justify;
-		margin: 0 2em;
-		line-height: 1em;
+		font-size: 1.5rem;
+		font-weight: 400;
+		margin: 0.5em 0 1.5em;
+		line-height: 1.4;
+		color: var(--secondary) !important;
+	}
+
+	p {
+		line-height: 1.6;
+		margin: 2em auto;
+		font-size: 1.2rem;
+		max-width: 32em;
+		color: #444;
+		text-align: center;
+	}
+
+	/* Buttons */
+	.button-group {
+		display: flex;
+		justify-content: center;
+		gap: 1em;
+		margin-top: 2em;
+	}
+
+	.cta,
+	.secondary {
+		display: inline-block;
+		padding: 0.9em 1.6em;
+		font-size: 1rem;
+		font-weight: 600;
+		text-decoration: none;
+		border-radius: var(--radius);
+		transition:
+			background var(--transition),
+			transform var(--transition),
+			box-shadow var(--transition);
+	}
+
+	/* Primary button */
+	.cta {
+		background: var(--primary);
+		color: var(--white);
+		box-shadow: 0 4px 12px rgba(139, 28, 36, 0.3);
+	}
+	.cta:hover {
+		background: #6e151b;
+		transform: translateY(-2px);
+		box-shadow: 0 6px 16px rgba(139, 28, 36, 0.4);
+	}
+
+	/* Secondary button */
+	.secondary {
+		background: var(--background);
+		color: var(--primary);
+		border: 2px solid var(--primary);
+	}
+	.secondary:hover {
+		background: var(--primary);
+		color: var(--white);
+		transform: translateY(-2px);
 	}
 </style>

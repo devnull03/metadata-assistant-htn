@@ -85,11 +85,11 @@
 
     let isOpen = true;
     let img = "/sample/photos/1.jpg";
-    let item = { title: "Sample Photo", description: "This is a sample." };
+    let itemFields = { title: "Sample Photo", description: "This is a sample." };
     
 </script>
 
-<ItemViewModalProps {isOpen} {img} {item}></ItemViewModalProps>
+<ItemViewModalProps {isOpen} {img} {itemFields}></ItemViewModalProps>
 
 <div class="p-4 max-w-full">
     <h1 class="text-2xl font-bold mb-6">Task Management Board</h1>

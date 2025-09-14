@@ -133,7 +133,9 @@ const cohere = new CohereClientV2({
   token: COHERE_API_KEY,
 });
 
-export async function queryCohere() {
+export async function queryCohere(chatHistory: any[]) {
+  console.log("Chat History:", chatHistory);
+  
   const response = await cohere.chat({
     model: 'command-a-vision-07-2025',
     messages: [
@@ -143,19 +145,7 @@ export async function queryCohere() {
           { type: 'text', text: prompt }
         ]
       },
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: 'Describe the logo!' },
-          {
-            type: 'image_url',
-            imageUrl: {
-              url: 'https://bpb-us-w2.wpmucdn.com/sites.uwm.edu/dist/4/404/files/2016/12/ad000001-yaguxo-e1499062679869.jpg',
-              detail: 'auto',
-            },
-          },
-        ],
-      },
+      ...chatHistory
     ],
     responseFormat: responseFormat
   });

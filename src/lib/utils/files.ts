@@ -1,12 +1,13 @@
+import type { Image } from "$lib/interfaces/sheet.interface";
 import * as kv from "idb-keyval";
 
 export const getUploadedFiles = async() => {
 	const dir = await kv.get("images");
 	if (!dir) return null;
-	const entries: [string, FileSystemFileHandle][] = [];
+	const entries: Image[] = [];
 	for await (const entry of dir.entries()) {
 		if (entry[1].kind !== "file") continue;
-		entries.push(entry as [string, FileSystemFileHandle])
+		entries.push(entry as Image);
 	}
 	return entries;
 }

@@ -3,12 +3,13 @@ import * as kv from "idb-keyval";
 import { queryCohereRemote } from "../../routes/testAPI/data.remote";
 
 export const getUploadedFiles = async () => {
-	const dir = await kv.get("images");
+	const dir = await kv.get("images") as FileSystemDirectoryHandle;
 	if (!dir) return null;
-	const entries: Image[] = [];
+	await dir.requestPermission();
+	const entries = [];
 	for await (const entry of dir.entries()) {
 		if (entry[1].kind !== "file") continue;
-		entries.push(entry as Image);
+		entries.push(entry);
 	}
 	return entries;
 };

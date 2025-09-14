@@ -127,7 +127,6 @@
 	}
 </script>
 
-<ItemViewModalProps {isOpen} {img} {itemFields}></ItemViewModalProps>
 
 <div class="p-4 max-w-full">
 	<div class="flex flex-col gap-6 w-full">

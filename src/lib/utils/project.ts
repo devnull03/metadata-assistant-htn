@@ -55,6 +55,11 @@ export interface ProjectCreationOptions {
  * @returns Promise<boolean> - true if project exists, false otherwise
  */
 export async function projectExists(): Promise<boolean> {
+	// Check if we're in a browser environment
+	if (typeof window === 'undefined') {
+		return true;
+	}
+
 	try {
 		const sheet = await kv.get('sheet');
 		return sheet !== undefined && sheet !== null;

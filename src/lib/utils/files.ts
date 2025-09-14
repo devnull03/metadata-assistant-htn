@@ -11,11 +11,14 @@ export const getUploadedFiles = async() => {
 	}
 	return entries;
 }
+
 export const getStoredSpreadsheet = async() => {
 	const sheet = await kv.get("sheet");
 	if (!sheet) return null;
 	return sheet as FileSystemDirectoryHandle;	
 }
+
 export const setStoredSpreadsheet = async(data: any) => {
 	await kv.set("sheet", data);
 }
+

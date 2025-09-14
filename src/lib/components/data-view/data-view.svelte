@@ -8,8 +8,14 @@
 
 	interface DataViewProps extends ComponentProps<typeof Tabs.Root> {
 		items: Sheet;
+		imagesLoading?: boolean;
 	}
-	let { ref = $bindable(null), items = $bindable(), ...restProps }: DataViewProps = $props();
+	let {
+		ref = $bindable(null),
+		items = $bindable(),
+		imagesLoading = false,
+		...restProps
+	}: DataViewProps = $props();
 
 	let defaultView: "grid" | "spreadsheet" = "grid";
 </script>
@@ -21,7 +27,7 @@
 			<Tabs.Trigger value="spreadsheet"><AlignJustify /></Tabs.Trigger>
 		</Tabs.List>
 		<Tabs.Content value="grid">
-			<Grid bind:items />
+			<Grid bind:items {imagesLoading} />
 		</Tabs.Content>
 		<Tabs.Content value="spreadsheet">
 			<Spreadsheet bind:items />

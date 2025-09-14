@@ -2,10 +2,9 @@
 	import * as Collapsible from "$lib/components/ui/collapsible";
 	import DataView from "$lib/components/data-view/data-view.svelte";
 	import { ChevronDown, ChevronRight } from "@lucide/svelte";
-	import type { Sheet } from "$lib/interfaces/sheet.interface";
+	import { type Sheet } from "$lib/interfaces/sheet.interface";
 	import { getUploadedFiles } from "$lib/utils/files";
 	import { onMount } from "svelte";
-	import ItemViewModal from "$lib/components/item-view-modal/item-view-modal.svelte";
 
 	let mockdata: Sheet = $state({
 		fields: [
@@ -77,10 +76,10 @@
 
 	$inspect(mockdata);
 
+	let imagesLoading = $state(true);
 	onMount(async () => {
 		mockdata.images = (await getUploadedFiles()) || [];
-		mockdata = mockdata;
-		// console.log(mockdata.images);
+		imagesLoading = false;
 	});
 </script>
 
@@ -107,7 +106,7 @@
 				</Collapsible.Trigger>
 				<Collapsible.Content class="max-h-96 overflow-y-auto">
 					<div class="p-4">
-						<DataView bind:items={todoData} />
+						<DataView bind:items={todoData} {imagesLoading} />
 					</div>
 				</Collapsible.Content>
 			</Collapsible.Root>
@@ -132,7 +131,7 @@
 				</Collapsible.Trigger>
 				<Collapsible.Content class="max-h-96 overflow-y-auto">
 					<div class="p-4">
-						<DataView bind:items={inProgressData} />
+						<DataView bind:items={inProgressData} {imagesLoading} />
 					</div>
 				</Collapsible.Content>
 			</Collapsible.Root>
@@ -157,7 +156,7 @@
 				</Collapsible.Trigger>
 				<Collapsible.Content class="max-h-96 overflow-y-auto">
 					<div class="p-4">
-						<DataView bind:items={doneData} />
+						<DataView bind:items={doneData} {imagesLoading} />
 					</div>
 				</Collapsible.Content>
 			</Collapsible.Root>

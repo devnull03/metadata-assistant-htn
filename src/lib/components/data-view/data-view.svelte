@@ -20,7 +20,6 @@
 		onItemClick = $bindable(() => {}),
 		...restProps
 	}: DataViewProps = $props();
-
 </script>
 
 <div>
@@ -30,10 +29,10 @@
 			<Tabs.Trigger value="spreadsheet"><AlignJustify /></Tabs.Trigger>
 		</Tabs.List>
 		<Tabs.Content value="grid">
-			<Grid bind:items {imagesLoading} />
+			<Grid bind:items {imagesLoading} onViewItemClick={onItemClick} />
 		</Tabs.Content>
 		<Tabs.Content value="spreadsheet">
-			<Spreadsheet bind:items />
+			<Spreadsheet bind:items onViewItemClick={onItemClick} />
 		</Tabs.Content>
 	</Tabs.Root>
 </div>

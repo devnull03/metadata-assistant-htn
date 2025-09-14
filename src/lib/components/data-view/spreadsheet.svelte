@@ -16,15 +16,21 @@
 		type SpreadsheetConfig
 	} from "$lib/utils/spreadsheet";
 	import { cn } from "$lib/utils";
+	import { Expand } from "@lucide/svelte";
 
 	interface Props {
 		items: Sheet;
 		config?: Partial<SpreadsheetConfig>;
 		class?: string;
-		onItemClick?: (item: any) => void;
+		onViewItemClick?: (item: any) => void;
 	}
 
-	let { items = $bindable(), config = {}, class: className, onItemClick }: Props = $props();
+	let {
+		items = $bindable(),
+		config = {},
+		class: className,
+		onViewItemClick: onItemClick = $bindable()
+	}: Props = $props();
 
 	// Focus action for better accessibility
 	function focus(node: HTMLElement) {
@@ -341,25 +347,11 @@
 							<td class="w-10 h-8 border-r border-b bg-background text-center p-1">
 								<button
 									type="button"
-									class="w-6 h-6 flex items-center justify-center rounded hover:bg-muted transition-colors"
+									class="w-6 h-6 flex items-center justify-center rounded hover:bg-muted transition-colors mx-auto"
 									onclick={(e) => handleExpandClick(rowIndex, e)}
 									aria-label={`Expand row ${rowIndex + 1}`}
 								>
-									<svg
-										width="12"
-										height="12"
-										viewBox="0 0 12 12"
-										fill="none"
-										xmlns="http://www.w3.org/2000/svg"
-										class="text-muted-foreground"
-									>
-										<path
-											d="M4 6L8 6M6 4L6 8"
-											stroke="currentColor"
-											stroke-width="1.5"
-											stroke-linecap="round"
-										/>
-									</svg>
+									<Expand class="size-4" />
 								</button>
 							</td>
 

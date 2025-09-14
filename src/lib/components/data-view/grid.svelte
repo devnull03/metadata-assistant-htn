@@ -5,10 +5,10 @@
 	interface Props {
 		items: Sheet;
 		imagesLoading: boolean;
-		onItemClick?: (item: any) => void;
+		onViewItemClick?: (item: any) => void;
 	}
 
-	let { items = $bindable(), imagesLoading = true, onItemClick }: Props = $props();
+	let { items = $bindable(), imagesLoading = true, onViewItemClick: onItemClick = $bindable() }: Props = $props();
 </script>
 
 <div class="w-full">

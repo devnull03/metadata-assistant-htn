@@ -12,9 +12,9 @@
 
 	onMount(async () => {
 		// Check if project exists on client-side
-		if (!(await projectExists())) {
-			goto("/new");
-		}
+		// if (!(await projectExists())) {
+		// 	goto("/new");
+		// }
 	});
 </script>
 

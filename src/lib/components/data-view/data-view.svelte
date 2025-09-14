@@ -10,7 +10,8 @@
 		items: Sheet;
 		imagesLoading?: boolean;
 		mode?: "grid" | "spreadsheet";
-		onItemClick?: (item: any) => void;
+		onItemClick?: (img: string, itemFields: Record<string, any> | null) => void;
+		questions?: Array<{ label: string; value: string }>;
 	}
 	let {
 		ref = $bindable(null),
@@ -18,6 +19,7 @@
 		imagesLoading = false,
 		mode = $bindable("grid"),
 		onItemClick = $bindable(() => {}),
+		questions,
 		...restProps
 	}: DataViewProps = $props();
 </script>

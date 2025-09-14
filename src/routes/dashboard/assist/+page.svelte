@@ -131,18 +131,27 @@
 		};
 	}
 
-	let onItemClick = async (item: any) => {
-		const file = await item[1].getFile();
-		if (file) {
-			itemViewModalData = { img: URL.createObjectURL(file), itemFields: item[1].metadata || null };
-			isItemViewModalOpen = true;
-		}
+	let onItemClick = (img: string, itemFields: Record<string, any> | null) => {
+		itemViewModalData = {
+			img,
+			itemFields,
+			questions: [
+				{ label: "What is the main subject of this image?", value: "" },
+				{ label: "What time period does this represent?", value: "" },
+				{ label: "Are there any notable features or details?", value: "" },
+				{ label: "What is the condition of the item?", value: "" },
+				{ label: "Any additional context or information?", value: "" }
+			]
+		};
+		isItemViewModalOpen = true;
 	};
 
 	let isItemViewModalOpen = $state(false);
-	let itemViewModalData = $state<{ img: string; itemFields: Record<string, any> | null } | null>(
-		null
-	);
+	let itemViewModalData = $state<{
+		img: string;
+		itemFields: Record<string, any> | null;
+		questions?: Array<{ label: string; value: string }>;
+	} | null>(null);
 </script>
 
 {#if itemViewModalData}

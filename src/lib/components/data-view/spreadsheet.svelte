@@ -21,9 +21,10 @@
 		items: Sheet;
 		config?: Partial<SpreadsheetConfig>;
 		class?: string;
+		onItemClick?: (item: any) => void;
 	}
 
-	let { items = $bindable(), config = {}, class: className }: Props = $props();
+	let { items = $bindable(), config = {}, class: className, onItemClick }: Props = $props();
 
 	// Focus action for better accessibility
 	function focus(node: HTMLElement) {
@@ -209,11 +210,23 @@
 		editing = null;
 	}
 
+	function handleExpandClick(rowIndex: number, event: MouseEvent) {
+		event.stopPropagation(); // Prevent row selection
+		if (onItemClick && items?.rows[rowIndex]) {
+			onItemClick(items.rows[rowIndex]);
+		}
+	}
+
 	function handleRowHeaderClick(rowIndex: number) {
 		const start = encodeCell({ c: 0, r: rowIndex });
 		const end = encodeCell({ c: (spreadsheetData?.columns.length || 6) - 1, r: rowIndex });
 		selected = [start, end];
 		editing = null;
+
+		// Call onItemClick with the original row data
+		if (onItemClick && items?.rows[rowIndex]) {
+			onItemClick(items.rows[rowIndex]);
+		}
 	}
 
 	// Get selection boundaries for styling
@@ -289,6 +302,9 @@
 						<!-- Top-left corner cell -->
 						<th class="w-12 h-8 border-r border-b bg-muted text-center"></th>
 
+						<!-- Expand button header -->
+						<th class="w-10 h-8 border-r border-b bg-muted text-center"></th>
+
 						<!-- Column headers -->
 						{#each spreadsheetData.columns as column, colIndex}
 							<th
@@ -319,6 +335,32 @@
 								role="rowheader"
 							>
 								{rowIndex + 1}
+							</td>
+
+							<!-- Expand button -->
+							<td class="w-10 h-8 border-r border-b bg-background text-center p-1">
+								<button
+									type="button"
+									class="w-6 h-6 flex items-center justify-center rounded hover:bg-muted transition-colors"
+									onclick={(e) => handleExpandClick(rowIndex, e)}
+									aria-label={`Expand row ${rowIndex + 1}`}
+								>
+									<svg
+										width="12"
+										height="12"
+										viewBox="0 0 12 12"
+										fill="none"
+										xmlns="http://www.w3.org/2000/svg"
+										class="text-muted-foreground"
+									>
+										<path
+											d="M4 6L8 6M6 4L6 8"
+											stroke="currentColor"
+											stroke-width="1.5"
+											stroke-linecap="round"
+										/>
+									</svg>
+								</button>
 							</td>
 
 							<!-- Data cells -->
@@ -385,9 +427,9 @@
 	}
 
 	/* Make columns distribute evenly */
-	.spreadsheet-table th:not(:first-child),
-	.spreadsheet-table td:not(:first-child) {
-		width: calc((100% - 48px) / var(--column-count));
+	.spreadsheet-table th:not(:first-child):not(:nth-child(2)),
+	.spreadsheet-table td:not(:first-child):not(:nth-child(2)) {
+		width: calc((100% - 88px) / var(--column-count));
 	}
 
 	/* Selection styling */

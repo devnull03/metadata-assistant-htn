@@ -216,23 +216,13 @@
 		editing = null;
 	}
 
-	function handleExpandClick(rowIndex: number, event: MouseEvent) {
-		event.stopPropagation(); // Prevent row selection
-		if (onItemClick && items?.rows[rowIndex]) {
-			onItemClick(items.rows[rowIndex]);
-		}
-	}
+
 
 	function handleRowHeaderClick(rowIndex: number) {
 		const start = encodeCell({ c: 0, r: rowIndex });
 		const end = encodeCell({ c: (spreadsheetData?.columns.length || 6) - 1, r: rowIndex });
 		selected = [start, end];
 		editing = null;
-
-		// Call onItemClick with the original row data
-		if (onItemClick && items?.rows[rowIndex]) {
-			onItemClick(items.rows[rowIndex]);
-		}
 	}
 
 	// Get selection boundaries for styling
@@ -348,7 +338,11 @@
 								<button
 									type="button"
 									class="w-6 h-6 flex items-center justify-center rounded hover:bg-muted transition-colors mx-auto"
-									onclick={(e) => handleExpandClick(rowIndex, e)}
+									onclick={(e) => {
+										if (onItemClick && items?.rows[rowIndex]) {
+											onItemClick(items.rows[rowIndex]);
+										}	
+									}}
 									aria-label={`Expand row ${rowIndex + 1}`}
 								>
 									<Expand class="size-4" />

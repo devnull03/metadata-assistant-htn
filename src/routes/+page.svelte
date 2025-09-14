@@ -4,15 +4,16 @@
 			<img src="/src/lib/assets/favicon.png" alt="qrate Logo" class="logo" />
 			<h1>qrate</h1>
 			<h2>
-				<span>Your reliable assistant</span><br />
+				<span>Your reliable workspace</span><br />
 				for <b>streamlining</b> digital asset indexing
 			</h2>
 			<p>
-				<span class="lg">qrate</span> is the quintessential assistant for archivists, curators,
+				<span class="lg">qrate</span> is the quintessential workspace for archivists, curators,
 				librarians, and everyone else who finds themselves often indexing vital information.
 				<br /><br />
 				Powered by state-of-the-art <span class="lg">cohere</span> multimodal MCP tool-calling vision
-				AI models, we feature stunning accuracy and shocking efficient processing.
+				AI models, we feature stunning accuracy and shockingly efficient processing, ready to save you
+				months of time.
 			</p>
 			<div class="button-group">
 				<a href="./new" class="cta">Go to Projects</a>
@@ -50,6 +51,37 @@
 		padding: 2rem;
 		font-family: system-ui, sans-serif;
 		color: var(--text);
+		--s: 193px; /* control the size*/
+		--c1: #921c2d;
+		--c2: #880d1e;
+		--c3: #5b0f1a;
+
+		--_g: var(--c1) 10%, var(--c2) 10.5% 19%, #0000 19.5% 80.5%, var(--c2) 81% 89.5%, var(--c3) 90%;
+		--_c: from -90deg at 37.5% 50%, #0000 75%;
+		--_l1: linear-gradient(145deg, var(--_g));
+		--_l2: linear-gradient(35deg, var(--_g));
+		background:
+			var(--_l1),
+			var(--_l1) calc(var(--s) / 2) var(--s),
+			var(--_l2),
+			var(--_l2) calc(var(--s) / 2) var(--s),
+			conic-gradient(var(--_c), var(--c1) 0) calc(var(--s) / 8) 0,
+			conic-gradient(var(--_c), var(--c3) 0) calc(var(--s) / 2) 0,
+			linear-gradient(90deg, var(--c3) 38%, var(--c1) 0 50%, var(--c3) 0 62%, var(--c1) 0);
+		background-size: var(--s) calc(2 * var(--s) / 3);
+
+	}
+
+	@keyframes main {
+		0% {
+			rotate: -13deg;
+		}
+		50% {
+			rotate: 13deg;
+		}
+		100% {
+			rotate: -13deg;
+		}
 	}
 
 	article {
@@ -64,8 +96,9 @@
 
 	/* Logo */
 	.logo {
-		width: 6em;
+		width: 4em;
 		margin-bottom: -2em;
+		margin-top: -1.4em;
 		display: block;
 		margin-left: auto;
 		margin-right: auto;

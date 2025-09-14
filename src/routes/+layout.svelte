@@ -1,6 +1,7 @@
 <script lang="ts">
-	import '../app.css';
-	import favicon from '$lib/assets/favicon.png';
+	import "../app.css";
+	import favicon from "$lib/assets/favicon.png";
+	import { onNavigate } from "$app/navigation";
 
 	let { children } = $props();
 </script>

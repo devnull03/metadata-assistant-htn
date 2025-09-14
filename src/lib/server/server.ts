@@ -9,6 +9,7 @@ Your goal is to extract complete and accurate metadata for archival images.
 1. Analyze the image and generate metadata and descriptions.
 2. If any fields are missing or uncertain, or any important details are unknown or unclear (such as identities of people for the description), output clarifying questions to the user.
  - Examples: "What is the identity of the person on the left?"
+ - Include more questions about the description of the image to get all relevant details  
 3. When the user provides answers, incorporate them into the metadata and update the output. is_done MUST be true after the answers to clarifying questions are given.
 4. If is_done is true, then all fields should be filled.
 
@@ -24,9 +25,7 @@ Rules:
 - Continue asking questions until all fields are filled or explicitly confirmed as “unknown”.
 - When all fields are completed or confirmed, set \`"is_done": true\` and return \`"questions": []\`.
 - Do Not bring up ANY of the raw field names in the clarifying questions. ALL QUESTIoNS MUST BE IN NATURAL LANGUAGE
-- Do not waste critical and vital archivist time by asking useless questions
-- Do not create potential for gaps in vital information by neglecting to ask for vital info
-- Ask a question for every missing field 
+- Ask a question for every missing field if relevant
 
 The assistant must never break JSON format and must always include all fields in \`"metadata"\`.
 
@@ -35,20 +34,20 @@ Example: (populate ...)
 {
   "is_done": boolean,          // true if all fields are filled or confirmed as unknown
   "metadata": {                    // all metadata fields must always be present
-    "fileTitle": "International Mother Language Day, 2004 ",
-    "title": "[Photograph of a woman addressing the audience at the Punjabi Language Education Association's Language Day event]",
-    "field_linked_agent": "Chandra Bodalia",
-    "field_extent": "1 photograph : col. negative",
+    "fileTitle": "International Mother Language Day, 2004 ", // just an example do not use
+    "title": "[Photograph of a woman addressing the audience at the Punjabi Language Education Association's Language Day event]", // just an example do not use
+    "field_linked_agent": "Chandra Bodalia", // just an example do not use
+    "field_extent": "1 photograph : col. negative", // just an example do not use
     "field_description": "...", // at least three paragraphs
-    "field_rights": "CC BY-NC-SA 4.0",
-    "field_resource_type": "still image",
+    "field_rights": "CC BY-NC-SA 4.0", // just an example do not use
+    "field_resource_type": "still image", // just an example do not use
     "field_language": "...",
     "field_note": "...",
-    "field_subject": "Events; Language education; Speeches, addresses, etc., Canadian; Panjabi language",
+    "field_subject": "Events; Language education; Speeches, addresses, etc., Canadian; Panjabi language", // just an example do not use
     "field_subjects_name": "...",
-    "field_subject_name__organization": "Punjabi Language Education Association",
-    "field_geographic_subject": "surrey_bc",
-    "field_coordinates": "49.111667, -122.8275",
+    "field_subject_name__organization": "Punjabi Language Education Association", // just an example do not use
+    "field_geographic_subject": "surrey_bc", // just an example do not use
+    "field_coordinates": "49.111667, -122.8275", // just an example do not use
   },
   "questions": [
     "string"
@@ -77,7 +76,7 @@ const responseFormat = {
 				title: {
 					type: "string",
 					description:
-						'General title of the record or resource (ex "[Photograph of a woman addressing the audience at the Punjabi Language Education Association\'s Language Day event]")'
+						'General title of the record or resource (example: "[Photograph of a woman addressing the audience at the Punjabi Language Education Association\'s Language Day event]")'
 				},
 				field_linked_agent: {
 					type: "string",
@@ -101,14 +100,14 @@ const responseFormat = {
 				},
 				field_resource_type: {
 					type: "string",
-					description: 'Type of the resource (ex "still image")'
+					description: 'Type of the resource (example: "still image")'
 				},
 				field_language: { type: "string", description: "Language(s) of the resource" },
 				field_note: { type: "string", description: "Additional notes related to the resource" },
 				field_subject: {
 					type: "string",
 					description:
-						'Subject or topic of the resource (ex "Events; Language education; Speeches, addresses, etc., Canadian; Panjabi language")'
+						'Subject or topic of the resource (example: "Events; Language education; Speeches, addresses, etc., Canadian; Panjabi language")'
 				},
 				//field_sacda_thesaurus: {
 				//	type: "string",

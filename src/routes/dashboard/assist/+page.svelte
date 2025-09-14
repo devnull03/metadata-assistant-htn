@@ -3,7 +3,7 @@
 	import DataView from "$lib/components/data-view/data-view.svelte";
 	import { ChevronDown, ChevronRight, GripHorizontal } from "@lucide/svelte";
 	import { type Sheet } from "$lib/interfaces/sheet.interface";
-	import { getImageRes, getUploadedFiles } from "$lib/utils/files";
+	import { loadProject, saveProject } from "$lib/utils/project";
 	import { onMount } from "svelte";
 	import type { PageData } from "./$types";
 	import ImageViewModal from "$lib/components/item-view-modal/item-view-modal.svelte";
@@ -13,91 +13,95 @@
 	let todoDisplayMode = $state<"spreadsheet" | "grid">(data.data.todoDisplayMode ?? "grid");
 	let doneDisplayMode = $state<"spreadsheet" | "grid">(data.data.doneDisplayMode ?? "spreadsheet");
 
-	$inspect(data);
+	// Load real project data instead of mock data
+	let sheet_data: Sheet | null = $state(null);
+	let loading = $state(true);
+	let error = $state<string | null>(null);
 
-	let sheet_data: Sheet = $state({
-		fields: [
-			{ title: "Task" },
-			{ title: "Description" },
-			{ title: "Due Date" },
-			{ title: "Priority" }
-		],
-		rows: [
-			{
-				Task: "Design Homepage",
-				Description: "Create wireframes and mockups for the new homepage.",
-				"Due Date": "2024-10-01",
-				Priority: "High"
-			},
-			{
-				Task: "Develop API",
-				Description: "Build the RESTful API for the mobile app.",
-				"Due Date": "2024-10-05",
-				Priority: "Medium"
-			},
-			{
-				Task: "Write Documentation",
-				Description: "Document the new features and API endpoints.",
-				"Due Date": "2024-10-07",
-				Priority: "Low"
-			},
-			{
-				Task: "Test Application",
-				Description: "Perform unit and integration testing.",
-				"Due Date": "2024-10-10",
-				Priority: "High"
-			},
-			{
-				Task: "Deploy to Production",
-				Description: "Deploy the latest version to the production environment.",
-				"Due Date": "2024-10-12",
-				Priority: "Medium"
-			}
-		],
+	// Initialize with empty structure for type safety
+	let defaultSheet: Sheet = {
+		fields: [],
+		rows: [],
 		images: []
-	});
+	};
 
-	let todoRows: number[] = $state(Array.from({ length: sheet_data.rows.length }, (_, i) => i));
+	let actualSheet = $derived(sheet_data || defaultSheet);
+
+	// Split data into todo and done items (initially all items are todo)
+	let todoRows: number[] = $state([]);
 	let doneRows: number[] = $state([]);
 
 	let todoData: Sheet = $derived({
-		fields: sheet_data.fields,
-		rows: sheet_data.rows?.filter((_, i) => todoRows.includes(i)) || [],
-		images: sheet_data.images?.filter((_, i) => todoRows.includes(i)) || []
+		fields: actualSheet.fields,
+		rows: actualSheet.rows?.filter((_, i) => todoRows.includes(i)) || [],
+		images: actualSheet.images?.filter((_, i) => todoRows.includes(i)) || []
 	});
 
 	let doneData: Sheet = $derived({
-		fields: sheet_data.fields,
-		rows: sheet_data.rows?.filter((_, i) => doneRows.includes(i)) || [],
-		images: sheet_data.images?.filter((_, i) => doneRows.includes(i)) || []
+		fields: actualSheet.fields,
+		rows: actualSheet.rows?.filter((_, i) => doneRows.includes(i)) || [],
+		images: actualSheet.images?.filter((_, i) => doneRows.includes(i)) || []
 	});
 
 	let todoOpen = $state(true);
 	let doneOpen = $state(true);
 
-	$inspect(sheet_data);
-
-	let imagesLoading = $state(true);
+	// Load project data on mount
 	onMount(async () => {
-		sheet_data.images = (await getUploadedFiles()) || [];
-		imagesLoading = false;
+		try {
+			loading = true;
+			const projectData = await loadProject();
+
+			if (projectData) {
+				sheet_data = projectData;
+				// Initialize all rows as todo items
+				todoRows = Array.from({ length: projectData.rows.length }, (_, i) => i);
+				doneRows = [];
+				error = null;
+			} else {
+				error = "No project data found. Please create a new project.";
+			}
+		} catch (err) {
+			console.error("Failed to load project:", err);
+			error = "Failed to load project data.";
+		} finally {
+			loading = false;
+		}
 	});
 
+	// Auto-save changes to project
 	// $effect(() => {
-	// 	const searchParams = new URLSearchParams($page.url.searchParams);
+	// 	if (sheet_data && !loading) {
+	// 		// Debounce saves to avoid excessive writes
+	// 		const timeoutId = setTimeout(async () => {
+	// 			try {
+	// 				await saveProject(sheet_data);
+	// 			} catch (err) {
+	// 				console.error("Failed to save project:", err);
+	// 			}
+	// 		}, 1000);
 
-	// 	// Update search params based on display modes
-	// 	if (data.todoDisplayMode) {
-	// 		searchParams.set("todoMode", data.todoDisplayMode);
+	// 		return () => clearTimeout(timeoutId);
 	// 	}
-	// 	if (data.doneDisplayMode) {
-	// 		searchParams.set("doneMode", data.doneDisplayMode);
-	// 	}
-
-	// 	// Navigate to the new URL with updated search params
-	// 	const newUrl = `${$page.url.pathname}?${searchParams.toString()}`;
-	// 	goto(newUrl, { replaceState: true, noScroll: true });
 	// });
+
+	// Move item from todo to done
+	function moveToCompleted(index: number) {
+		const todoIndex = todoRows.indexOf(index);
+		if (todoIndex > -1) {
+			todoRows = todoRows.filter((i) => i !== index);
+			doneRows = [...doneRows, index];
+		}
+	}
+
+	// Move item from done to todo
+	function moveToTodo(index: number) {
+		const doneIndex = doneRows.indexOf(index);
+		if (doneIndex > -1) {
+			doneRows = doneRows.filter((i) => i !== index);
+			todoRows = [...todoRows, index];
+		}
+	}
 
 	let todoHeight = $state(400);
 	let doneHeight = $state(400);
@@ -146,89 +150,113 @@
 {/if}
 
 <div class="p-4 max-w-full">
-	<div class="flex flex-col gap-6 w-full">
-		<!-- Todo Section -->
-		<div class="bg-card border border-border rounded-lg overflow-hidden w-full">
-			<Collapsible.Root bind:open={todoOpen}>
-				<Collapsible.Trigger class="w-full p-4 bg-muted border-l-4 border-l-destructive">
-					<div class="flex items-center gap-2">
-						{#if todoOpen}
-							<ChevronDown class="h-4 w-4" />
-						{:else}
-							<ChevronRight class="h-4 w-4" />
-						{/if}
-						<h2 class="text-lg font-semibold">To Do</h2>
-						<span
-							class="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full font-medium"
-							>{todoData.rows.length}</span
-						>
-					</div>
-				</Collapsible.Trigger>
-				<Collapsible.Content>
-					<div class="relative">
-						<div class="py-4 overflow-y-auto" style={`height: ${todoHeight}px`}>
-							<DataView
-								bind:mode={todoDisplayMode}
-								bind:items={todoData}
-								{imagesLoading}
-								{onItemClick}
-							/>
-						</div>
-						<!-- svelte-ignore a11y_no_static_element_interactions -->
-						<div
-							class="flex items-center justify-center h-3 bg-muted/50 cursor-row-resize hover:bg-muted transition-colors"
-							onmousedown={createResizeHandler(
-								(h) => (todoHeight = h),
-								() => todoHeight
-							)}
-						>
-							<GripHorizontal class="h-3 w-3 text-muted-foreground" />
-						</div>
-					</div>
-				</Collapsible.Content>
-			</Collapsible.Root>
+	{#if loading}
+		<div class="flex items-center justify-center h-64">
+			<div class="text-center">
+				<div
+					class="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"
+				></div>
+				<p class="text-muted-foreground">Loading project data...</p>
+			</div>
 		</div>
+	{:else if error}
+		<div class="flex items-center justify-center h-64">
+			<div class="text-center">
+				<p class="text-destructive font-medium mb-2">Error Loading Project</p>
+				<p class="text-muted-foreground">{error}</p>
+				<a
+					href="/new"
+					class="inline-block mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+				>
+					Create New Project
+				</a>
+			</div>
+		</div>
+	{:else}
+		<div class="flex flex-col gap-6 w-full">
+			<!-- Todo Section -->
+			<div class="bg-card border border-border rounded-lg overflow-hidden w-full">
+				<Collapsible.Root bind:open={todoOpen}>
+					<Collapsible.Trigger class="w-full p-4 bg-muted border-l-4 border-l-destructive">
+						<div class="flex items-center gap-2">
+							{#if todoOpen}
+								<ChevronDown class="h-4 w-4" />
+							{:else}
+								<ChevronRight class="h-4 w-4" />
+							{/if}
+							<h2 class="text-lg font-semibold">To Do</h2>
+							<span
+								class="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full font-medium"
+								>{todoData.rows.length}</span
+							>
+						</div>
+					</Collapsible.Trigger>
+					<Collapsible.Content>
+						<div class="relative">
+							<div class="py-4 overflow-y-auto" style={`height: ${todoHeight}px`}>
+								<DataView
+									bind:mode={todoDisplayMode}
+									bind:items={todoData}
+									imagesLoading={false}
+									{onItemClick}
+								/>
+							</div>
+							<!-- svelte-ignore a11y_no_static_element_interactions -->
+							<div
+								class="flex items-center justify-center h-3 bg-muted/50 cursor-row-resize hover:bg-muted transition-colors"
+								onmousedown={createResizeHandler(
+									(h) => (todoHeight = h),
+									() => todoHeight
+								)}
+							>
+								<GripHorizontal class="h-3 w-3 text-muted-foreground" />
+							</div>
+						</div>
+					</Collapsible.Content>
+				</Collapsible.Root>
+			</div>
 
-		<!-- Done Section -->
-		<div class="bg-card border border-border rounded-lg overflow-hidden w-full">
-			<Collapsible.Root bind:open={doneOpen}>
-				<Collapsible.Trigger class="w-full p-4 bg-muted border-l-4 border-l-green-500">
-					<div class="flex items-center gap-2">
-						{#if doneOpen}
-							<ChevronDown class="h-4 w-4" />
-						{:else}
-							<ChevronRight class="h-4 w-4" />
-						{/if}
-						<h2 class="text-lg font-semibold">Done</h2>
-						<span
-							class="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full font-medium"
-							>{doneData.rows.length}</span
-						>
-					</div>
-				</Collapsible.Trigger>
-				<Collapsible.Content>
-					<div class="relative">
-						<div class="p-4 overflow-y-auto" style={`height: ${doneHeight}px`}>
-							<DataView
-								bind:mode={doneDisplayMode}
-								bind:items={doneData}
-								{imagesLoading}
-								{onItemClick}
-							/>
+			<!-- Done Section -->
+			<div class="bg-card border border-border rounded-lg overflow-hidden w-full">
+				<Collapsible.Root bind:open={doneOpen}>
+					<Collapsible.Trigger class="w-full p-4 bg-muted border-l-4 border-l-green-500">
+						<div class="flex items-center gap-2">
+							{#if doneOpen}
+								<ChevronDown class="h-4 w-4" />
+							{:else}
+								<ChevronRight class="h-4 w-4" />
+							{/if}
+							<h2 class="text-lg font-semibold">Done</h2>
+							<span
+								class="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full font-medium"
+								>{doneData.rows.length}</span
+							>
 						</div>
-						<!-- svelte-ignore a11y_no_static_element_interactions -->
-						<div
-							class="flex items-center justify-center h-3 bg-muted/50 cursor-row-resize hover:bg-muted transition-colors"
-							onmousedown={createResizeHandler(
-								(h) => (doneHeight = h),
-								() => doneHeight
-							)}
-						>
-							<GripHorizontal class="h-3 w-3 text-muted-foreground" />
+					</Collapsible.Trigger>
+					<Collapsible.Content>
+						<div class="relative">
+							<div class="p-4 overflow-y-auto" style={`height: ${doneHeight}px`}>
+								<DataView
+									bind:mode={doneDisplayMode}
+									bind:items={doneData}
+									imagesLoading={false}
+									{onItemClick}
+								/>
+							</div>
+							<!-- svelte-ignore a11y_no_static_element_interactions -->
+							<div
+								class="flex items-center justify-center h-3 bg-muted/50 cursor-row-resize hover:bg-muted transition-colors"
+								onmousedown={createResizeHandler(
+									(h) => (doneHeight = h),
+									() => doneHeight
+								)}
+							>
+								<GripHorizontal class="h-3 w-3 text-muted-foreground" />
+							</div>
 						</div>
-					</div>
-				</Collapsible.Content>
-			</Collapsible.Root>
+					</Collapsible.Content>
+				</Collapsible.Root>
+			</div>
 		</div>
-	</div>
+	{/if}
 </div>

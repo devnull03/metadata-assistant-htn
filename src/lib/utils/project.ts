@@ -1,4 +1,4 @@
-import type { Image, Field, Sheet } from "$lib/interfaces/sheet.interface";
+import type { Image, Field, Sheet, AIMetadata, ImageResponse } from "$lib/interfaces/sheet.interface";
 import { getUploadedFiles, setStoredSpreadsheet } from "./files";
 import * as kv from "idb-keyval";
 
@@ -7,11 +7,11 @@ import * as kv from "idb-keyval";
  */
 export interface DefaultFieldConfig {
 	field: Field;
-	generator?: (image: Image, index: number) => any;
+	generator?: (image: Image, index: number, aiData?: AIMetadata) => any;
 }
 
 /**
- * Default fields that are created for new projects
+ * Default fields that are created for new projects (including AI metadata fields)
  */
 export const DEFAULT_FIELDS: DefaultFieldConfig[] = [
 	{
@@ -38,6 +38,70 @@ export const DEFAULT_FIELDS: DefaultFieldConfig[] = [
 			instructions: 'Unique identifier for accessing this item.'
 		},
 		generator: () => '' // Empty for now, can be customized later
+	},
+	// AI-generated metadata fields
+	{
+		field: {
+			title: 'fileTitle',
+			instructions: 'Title of the file as determined by AI analysis.'
+		},
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.fileTitle || ''
+	},
+	{
+		field: {
+			title: 'title',
+			instructions: 'Descriptive title of the image content.'
+		},
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.title || ''
+	},
+	{
+		field: {
+			title: 'field_description',
+			instructions: 'Detailed description of the image content.'
+		},
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_description || ''
+	},
+	{
+		field: {
+			title: 'field_subject',
+			instructions: 'Subject or topic of the image.'
+		},
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_subject || ''
+	},
+	{
+		field: {
+			title: 'field_linked_agent',
+			instructions: 'Person or organization linked to this resource.'
+		},
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_linked_agent || ''
+	},
+	{
+		field: {
+			title: 'field_resource_type',
+			instructions: 'Type of the resource (e.g., still image).'
+		},
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_resource_type || 'still image'
+	},
+	{
+		field: {
+			title: 'field_rights',
+			instructions: 'Rights or usage restrictions for the resource.'
+		},
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_rights || ''
+	},
+	{
+		field: {
+			title: 'field_geographic_subject',
+			instructions: 'Geographic location associated with the resource.'
+		},
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_geographic_subject || ''
+	},
+	{
+		field: {
+			title: 'field_coordinates',
+			instructions: 'Geographic coordinates related to the resource.'
+		},
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_coordinates || ''
 	}
 ];
 
@@ -90,7 +154,8 @@ function sortImages(images: Image[], order: 'asc' | 'desc' = 'desc'): Image[] {
  */
 function generateTemplateSpreadsheet(
 	images: Image[],
-	fieldConfigs: DefaultFieldConfig[]
+	fieldConfigs: DefaultFieldConfig[],
+	aiResults?: Map<string, ImageResponse>
 ): Sheet {
 	// Extract fields from configurations
 	const fields = fieldConfigs.map(config => config.field);
@@ -98,11 +163,13 @@ function generateTemplateSpreadsheet(
 	// Generate rows using the generator functions
 	const rows = images.map((image, index) => {
 		const row: Record<string, any> = {};
+		const filename = image[1].name;
+		const aiData = aiResults?.get(filename)?.metadata;
 
 		fieldConfigs.forEach(config => {
 			const fieldTitle = config.field.title;
 			if (config.generator) {
-				row[fieldTitle] = config.generator(image, index);
+				row[fieldTitle] = config.generator(image, index, aiData);
 			} else {
 				row[fieldTitle] = '';
 			}
@@ -121,7 +188,10 @@ function generateTemplateSpreadsheet(
 /**
  * Create a new project from scratch using uploaded images
  */
-export async function createFromScratch(options: ProjectCreationOptions = {}): Promise<Sheet | null> {
+export async function createFromScratch(
+	options: ProjectCreationOptions = {},
+	aiResults?: Map<string, ImageResponse>
+): Promise<Sheet | null> {
 	try {
 		// Get uploaded files
 		const images = await getUploadedFiles();
@@ -137,18 +207,23 @@ export async function createFromScratch(options: ProjectCreationOptions = {}): P
 		const sortOrder = options.sortOrder || 'desc';
 		const sortedImages = sortImages(images, sortOrder);
 
-		// Generate template spreadsheet
-		const sheet = generateTemplateSpreadsheet(sortedImages, fieldConfigs);
+		// Generate template spreadsheet with AI data
+		const sheet = generateTemplateSpreadsheet(sortedImages, fieldConfigs, aiResults);
 
 		// Store the project
 		await setStoredSpreadsheet(sheet);
+
+		// Store AI results for future reference
+		if (aiResults) {
+			await kv.set('ai-results', Object.fromEntries(aiResults));
+		}
 
 		// Optionally store project metadata
 		if (options.name) {
 			await kv.set('project-name', options.name);
 		}
 
-		console.log(`Created project with ${sheet.rows.length} items`);
+		console.log(`Created project with ${sheet.rows.length} items and AI metadata`);
 		return sheet;
 
 	} catch (error) {
@@ -188,6 +263,74 @@ export async function createWithCustomFields(
 	return createFromScratch({
 		...options,
 		defaultFields: customFields
+	});
+}
+
+/**
+ * Complete project creation workflow with AI metadata generation
+ */
+export async function createProjectWithAI(
+	images: Image[],
+	directoryHandle: FileSystemDirectoryHandle,
+	options: ProjectCreationOptions = {},
+	onProgress?: (current: number, total: number, filename: string) => void
+): Promise<Sheet | null> {
+	try {
+		// Store directory handle first
+		await kv.set('images', directoryHandle);
+
+		// Process images with AI
+		const aiResults = new Map<string, ImageResponse>();
+
+		for (let i = 0; i < images.length; i++) {
+			const [filename, handle] = images[i];
+
+			// Notify progress
+			onProgress?.(i + 1, images.length, filename);
+
+			try {
+				const file = await handle.getFile();
+				const base64 = await blobToBase64(file);
+
+				// Call AI service
+				const response = await fetch('/api/image', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ image: base64 })
+				});
+
+				if (response.ok) {
+					const data = await response.json();
+					aiResults.set(filename, data.response);
+				} else {
+					console.warn(`Failed to process ${filename} with AI`);
+				}
+			} catch (error) {
+				console.error(`Error processing ${filename}:`, error);
+			}
+		}
+
+		// Create project with AI results
+		return await createFromScratch(options, aiResults);
+
+	} catch (error) {
+		console.error('Failed to create project with AI:', error);
+		return null;
+	}
+}
+
+/**
+ * Helper function to convert blob to base64
+ */
+async function blobToBase64(blob: Blob): Promise<string> {
+	return new Promise<string>((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onload = () => {
+			const result = reader.result as string;
+			resolve(result.replace(/^data:image\/[a-z]+;base64,/, ""));
+		};
+		reader.onerror = (err) => reject(err);
+		reader.readAsDataURL(blob);
 	});
 }
 

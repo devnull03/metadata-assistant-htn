@@ -43,6 +43,30 @@ export interface Field {
 	instructions?: string;
 }
 
+// AI-generated metadata structure (matches server response)
+export interface AIMetadata {
+	fileTitle: string;
+	title: string;
+	field_linked_agent: string;
+	field_extent: string;
+	field_description: string;
+	field_rights: string;
+	field_resource_type: string;
+	field_language: string;
+	field_note: string;
+	field_subject: string;
+	field_subjects_name: string;
+	field_subject_name__organization: string;
+	field_geographic_subject: string;
+	field_coordinates: string;
+}
+
+export interface ImageResponse {
+	is_done: boolean;
+	metadata: AIMetadata;
+	questions: string[];
+}
+
 export class Sheet_ implements Sheet {
 	fields: Field[]
 	rows: Record<string, any>[]

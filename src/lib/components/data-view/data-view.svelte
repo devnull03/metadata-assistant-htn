@@ -10,12 +10,14 @@
 		items: Sheet;
 		imagesLoading?: boolean;
 		mode?: "grid" | "spreadsheet";
+		onItemClick?: (item: any) => void;
 	}
 	let {
 		ref = $bindable(null),
 		items = $bindable(),
 		imagesLoading = false,
 		mode = $bindable("grid"),
+		onItemClick = $bindable(() => {}),
 		...restProps
 	}: DataViewProps = $props();
 

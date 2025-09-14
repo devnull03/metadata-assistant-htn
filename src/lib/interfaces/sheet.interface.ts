@@ -1,6 +1,6 @@
 export const DELIMITER = ',';
 
-// export type Image = [string, FileSystemFileHandle];
+export type Image = [string, FileSystemFileHandle];
 
 // Extended interfaces for spreadsheet functionality
 export interface SpreadsheetColumn {
@@ -35,7 +35,7 @@ export interface SpreadsheetData {
 export interface Sheet {
 	fields: Field[];
 	rows: Record<string, any>[];
-	images: [string, FileSystemFileHandle | FileSystemDirectoryHandle][];
+	images: Image[];
 }
 
 export interface Field {
@@ -46,7 +46,7 @@ export interface Field {
 export class Sheet_ implements Sheet {
 	fields: Field[]
 	rows: Record<string, any>[]
-	images: [string, FileSystemFileHandle | FileSystemDirectoryHandle][]
+	images: Image[]
 
 	constructor() {
 		this.fields = [];
@@ -54,7 +54,7 @@ export class Sheet_ implements Sheet {
 		this.images = [];
 	}
 
-	from_new(images: [string, FileSystemFileHandle | FileSystemDirectoryHandle][]) {
+	from_new(images: Image[]) {
 		this.fields.push({ title: 'file', instructions: 'File names must match exactly with uploaded images.' });
 		this.images = images.sort((a, b) => {
 			if (a[1].name > b[1].name) return -1;

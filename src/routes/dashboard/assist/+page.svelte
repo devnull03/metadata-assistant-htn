@@ -6,6 +6,7 @@
 	import { getUploadedFiles } from "$lib/utils/files";
 	import { onMount } from "svelte";
 	import type { PageData } from "./$types";
+	import ImageViewModal from "$lib/components/item-view-modal/item-view-modal.svelte";
 
 	let data: PageData = $props();
 
@@ -125,8 +126,16 @@
 			document.addEventListener("mouseup", onMouseUp);
 		};
 	}
+
+	let isImageViewModalOpen = $state(false);
+	let imageViewModalData = $state<{ img: string; itemFields: Record<string, any> | null } | null>(
+		null
+	);
 </script>
 
+{#if imageViewModalData}
+	<ImageViewModal bind:isOpen={isImageViewModalOpen} {...imageViewModalData} />
+{/if}
 
 <div class="p-4 max-w-full">
 	<div class="flex flex-col gap-6 w-full">
@@ -150,11 +159,7 @@
 				<Collapsible.Content>
 					<div class="relative">
 						<div class="py-4 overflow-y-auto" style={`height: ${todoHeight}px`}>
-							<DataView
-								bind:mode={todoDisplayMode}
-								bind:items={todoData}
-								{imagesLoading}
-							/>
+							<DataView bind:mode={todoDisplayMode} bind:items={todoData} {imagesLoading} />
 						</div>
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<div
@@ -191,11 +196,7 @@
 				<Collapsible.Content>
 					<div class="relative">
 						<div class="p-4 overflow-y-auto" style={`height: ${doneHeight}px`}>
-							<DataView
-								bind:mode={doneDisplayMode}
-								bind:items={doneData}
-								{imagesLoading}
-							/>
+							<DataView bind:mode={doneDisplayMode} bind:items={doneData} {imagesLoading} />
 						</div>
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<div

@@ -1,6 +1,5 @@
 import type { Image } from "$lib/interfaces/sheet.interface";
 import * as kv from "idb-keyval";
-import { queryCohereRemote } from "../../routes/testAPI/data.remote";
 
 export const getUploadedFiles = async () => {
 	const dir = await kv.get("images") as FileSystemDirectoryHandle;
@@ -9,7 +8,7 @@ export const getUploadedFiles = async () => {
 	const entries = [];
 	for await (const entry of dir.entries()) {
 		if (entry[1].kind !== "file") continue;
-		entries.push(entry);
+		entries.push(entry as Image);
 	}
 	return entries;
 };

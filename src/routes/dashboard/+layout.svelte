@@ -10,12 +10,12 @@
 
     let props: LayoutProps = $props();
 
-    onMount(async () => {
-        // Check if project exists on client-side
-        if (!(await projectExists())) {
-            // goto("/new");
-        }
-    });
+	onMount(async () => {
+		// Check if project exists on client-side
+		// if (!(await projectExists())) {
+		// 	goto("/new");
+		// }
+	});
 </script>
 
 <div class="[--header-height:calc(--spacing(14))]">

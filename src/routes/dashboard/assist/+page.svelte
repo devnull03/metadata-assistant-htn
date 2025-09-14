@@ -3,7 +3,7 @@
 	import DataView from "$lib/components/data-view/data-view.svelte";
 	import { ChevronDown, ChevronRight, GripHorizontal } from "@lucide/svelte";
 	import { type Sheet } from "$lib/interfaces/sheet.interface";
-	import { getUploadedFiles } from "$lib/utils/files";
+	import { getImageRes, getUploadedFiles } from "$lib/utils/files";
 	import { onMount } from "svelte";
 	import type { PageData } from "./$types";
 	import ImageViewModal from "$lib/components/item-view-modal/item-view-modal.svelte";
@@ -127,6 +127,14 @@
 		};
 	}
 
+	let onItemClick = async (item: any) => {
+		const file = await item[1].getFile();
+		if (file) {
+			imageViewModalData = { img: URL.createObjectURL(file), itemFields: item[1].metadata || null };
+			isImageViewModalOpen = true;
+		}
+	};
+
 	let isImageViewModalOpen = $state(false);
 	let imageViewModalData = $state<{ img: string; itemFields: Record<string, any> | null } | null>(
 		null
@@ -159,7 +167,12 @@
 				<Collapsible.Content>
 					<div class="relative">
 						<div class="py-4 overflow-y-auto" style={`height: ${todoHeight}px`}>
-							<DataView bind:mode={todoDisplayMode} bind:items={todoData} {imagesLoading} />
+							<DataView
+								bind:mode={todoDisplayMode}
+								bind:items={todoData}
+								{imagesLoading}
+								{onItemClick}
+							/>
 						</div>
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<div
@@ -196,7 +209,12 @@
 				<Collapsible.Content>
 					<div class="relative">
 						<div class="p-4 overflow-y-auto" style={`height: ${doneHeight}px`}>
-							<DataView bind:mode={doneDisplayMode} bind:items={doneData} {imagesLoading} />
+							<DataView
+								bind:mode={doneDisplayMode}
+								bind:items={doneData}
+								{imagesLoading}
+								{onItemClick}
+							/>
 						</div>
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<div

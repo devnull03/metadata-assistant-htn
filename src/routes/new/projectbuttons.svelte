@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { getUploadedFiles } from "$lib/utils/files";
+	import type { Image } from "$lib/interfaces/sheet.interface";
 	import * as kv from "idb-keyval";
-	let folder = $state<[string, FileSystemFileHandle][]>([]);
+	let folder = $state<Image[]>([]);
 	folder = (await getUploadedFiles()) ?? [];
 	const selectFolder = async () => {
 		const dir = await showDirectoryPicker();

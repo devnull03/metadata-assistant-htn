@@ -46,7 +46,6 @@
 	"dependencies": {
 		"@types/wicg-file-system-access": "^2023.10.6",
 		"cohere-ai": "^7.19.0",
-		"csv": "^6.4.1",
 		"idb-keyval": "^6.2.2",
 		"native-file-system-adapter": "^3.0.1",
 		"svelte-sheets": "^1.0.0"

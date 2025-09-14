@@ -18,13 +18,14 @@
 	let { isOpen = $bindable(false), img, itemFields, filename }: ItemViewModalProps = $props();
 
 	$inspect(itemFields);
+	let m = $state(false);
 
 	// Use props questions if provided, otherwise fallback to default
 	let questions = $state(
-		(await kv.get("ai-results"))[filename].questions.map((x) => ({
+		(await kv.get("ai-results"))[filename].questions?.map((x) => ({
 			label: x,
 			value: ""
-		}))
+		})) ?? []
 	);
 	async function blobToBase64(blob: Blob): Promise<string> {
 		return new Promise<string>((resolve, reject) => {
@@ -40,6 +41,8 @@
 	const send = async () => {
 		const files = await getUploadedFiles();
 		const f = await files?.find((x) => x[0] === filename)![1].getFile();
+		m = true;
+		questions = [];
 		const res = await (
 			await fetch("/api/image", {
 				method: "post",
@@ -49,7 +52,9 @@
 				})
 			})
 		).json();
+		m = false;
 		await kv.set("ai-results", { ...(await kv.get("ai-results")), [filename]: res });
+		itemFields = { ...itemFields, ...res.response.metadata };
 		res.response.metadata;
 	};
 </script>
@@ -117,7 +122,10 @@
 					<div class="flex gap-2">
 						<Button size="sm" onclick={send}>Send</Button>
 					</div>
-				</div>{/if}
+				</div>
+			{:else}
+				<div style="padding:3em">{m ? "Loading..." : "No questions."}</div>
+			{/if}
 		</div>
 	</Dialog.Content>
 </Dialog.Root>

@@ -152,8 +152,9 @@
 	<svelte:boundary>
 		{#snippet pending()}
 			<p>Loading...</p>
-		{/snippet}
-		<ItemViewModal bind:isOpen={isItemViewModalOpen} {...itemViewModalData} />
+		{/snippet}{#key itemViewModalData.filename}
+			<ItemViewModal bind:isOpen={isItemViewModalOpen} {...itemViewModalData} />
+		{/key}
 	</svelte:boundary>
 {/if}
 

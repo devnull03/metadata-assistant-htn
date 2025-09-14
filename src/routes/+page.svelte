@@ -2,13 +2,13 @@
 	<article>
 		<section>
 			<img src="/src/lib/assets/favicon.png" alt="Qrate Logo" class="logo" />
-			<h1>Qrate</h1>
+			<h1>qrate</h1>
 			<h2>
 				<span>Your reliable assistant</span><br>
 				for <b>streamlining</b> digital asset indexing
 			</h2>
 			<p>
-				Qrate helps archivists and digital librarians efficiently describe, organize, and manage collections. Powered by AI, it guides you through metadata extraction, clarifies uncertainties, and ensures your assets are discoverable and well-documented.
+				qrate helps archivists and digital librarians efficiently describe, organize, and manage collections. Powered by AI, it guides you through metadata extraction, clarifies uncertainties, and ensures your assets are discoverable and well-documented.
 			</p>
 			<div class="button-group">
 				<a href="./new" class="cta">Go to Projects</a>
@@ -63,9 +63,9 @@ article {
 
 /* Typography */
 h1 {
-  font-size: 2.5rem;
+  font-size: 3.2rem;
   font-weight: 800;
-  margin: 0.2em 0;
+  margin: 0.4em 0;
   color: var(--primary);
 }
 

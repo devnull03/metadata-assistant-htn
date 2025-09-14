@@ -1,4 +1,4 @@
-import { parse } from 'csv/sync';
+import { parse } from './csv';
 
 /**
  * Interface for parsed CSV data

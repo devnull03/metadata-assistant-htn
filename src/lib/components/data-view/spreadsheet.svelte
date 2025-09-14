@@ -364,6 +364,7 @@
 								{column.title || encodeCol(colIndex)}
 
 								<!-- Resize handle -->
+								<!-- svelte-ignore a11y_no_static_element_interactions -->
 								<div
 									class="absolute right-0 top-0 w-2 h-full cursor-col-resize hover:bg-primary/30 transition-colors"
 									onmousedown={(e) => handleResizeStart(e, colIndex)}
@@ -407,7 +408,9 @@
 												const file = await image[1].getFile();
 												if (file) {
 													const img = URL.createObjectURL(file);
-													const itemFields = image[1].metadata || null;
+													const itemFields = items.rows.find(
+														(row) => row.file === items.rows[rowIndex].file
+													) as Record<string, any> | null;
 													onItemClick(img, itemFields);
 												}
 											}

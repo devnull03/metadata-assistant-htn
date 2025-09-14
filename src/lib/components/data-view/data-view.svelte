@@ -9,7 +9,7 @@
 	interface DataViewProps extends ComponentProps<typeof Tabs.Root> {
 		items: Sheet;
 	}
-	let { ref = $bindable(null), items, ...restProps }: DataViewProps = $props();
+	let { ref = $bindable(null), items = $bindable(), ...restProps }: DataViewProps = $props();
 
 	let defaultView: "grid" | "spreadsheet" = "grid";
 </script>

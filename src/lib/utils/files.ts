@@ -5,7 +5,6 @@ import * as kv from "idb-keyval";
 import { queryCohereRemote } from "../../routes/new/data.remote";
 
 export const getUploadedFiles = async () => {
-<<<<<<< HEAD
 	const dir = (await kv.get("images")) as FileSystemDirectoryHandle;
 	if (!dir) return null;
 	await dir.requestPermission();
@@ -15,17 +14,6 @@ export const getUploadedFiles = async () => {
 		entries.push(entry);
 	}
 	return entries;
-=======
-    const dir = await kv.get("images") as FileSystemDirectoryHandle;
-    if (!dir) return null;
-    await dir.requestPermission();
-    const entries = [];
-    for await (const entry of dir.entries()) {
-        if (entry[1].kind !== "file") continue;
-        entries.push(entry);
-    }
-    return entries;
->>>>>>> ebb2b2404a80db55167df18afaa671a7c1471a1b
 };
 export const getStoredSpreadsheet = async () => {
     const sheet = await kv.get("sheet");
@@ -66,7 +54,6 @@ export interface ImageResponse {
 
 // USELESS
 export const getImageRes = async (filename: string, base64: string, qna?: [string, string][]) => {
-<<<<<<< HEAD
 	console.log(base64)
 	localStorage.imageRes ||= "{}";
 	const data = (JSON.parse(localStorage.imageRes)[filename] ?? null) as null | ImageResponse;
@@ -77,13 +64,4 @@ export const getImageRes = async (filename: string, base64: string, qna?: [strin
 	const temp = JSON.parse(localStorage.imageRes);
 	localStorage.imageRes = JSON.stringify({ ...temp, [filename]: dat });
 	return dat;
-=======
-    localStorage.imageRes ||= "{}";
-    const data = (JSON.parse(localStorage.imageRes)[filename] ?? null) as null | ImageResponse;
-    const dat =
-        !data || (!data.is_done && qna) ? await queryCohereRemote({ image: base64, qna }) : data;
-    const temp = JSON.parse(localStorage.imageRes);
-    localStorage.imageRes = { ...temp, [filename]: dat };
-    return dat;
->>>>>>> ebb2b2404a80db55167df18afaa671a7c1471a1b
 };

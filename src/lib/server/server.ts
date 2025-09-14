@@ -74,7 +74,11 @@ const responseFormat = {
 				},*/
 				//parent_id: { type: "string", description: "Identifier of the parent record or object" },
 				fileTitle: { type: "string", description: "Title of the file" },
-				title: { type: "string", description: "General title of the record or resource (ex \"[Photograph of a woman addressing the audience at the Punjabi Language Education Association's Language Day event]\")" },
+				title: {
+					type: "string",
+					description:
+						'General title of the record or resource (ex "[Photograph of a woman addressing the audience at the Punjabi Language Education Association\'s Language Day event]")'
+				},
 				field_linked_agent: {
 					type: "string",
 					description: "Agent (person, organization) linked to this resource (depicted)"
@@ -83,19 +87,29 @@ const responseFormat = {
 				//	type: "string",
 				//	description: "Date the resource was created, in EDTF format"
 				//},
-				field_extent: { type: "string", description: "Extent or size of the resource (ex \"1 photograph : col. negative\")" },
-				field_description: { type: "string", description: "Description of the resource, multiple paragraphs (3) if possible" },
+				field_extent: {
+					type: "string",
+					description: 'Extent or size of the resource (ex "1 photograph : col. negative")'
+				},
+				field_description: {
+					type: "string",
+					description: "Description of the resource, multiple paragraphs (3) if possible"
+				},
 				field_rights: {
 					type: "string",
-					description: "Rights or usage restrictions for the resource (ex \"CC BY-NC-SA 4.0\")"
+					description: 'Rights or usage restrictions for the resource (ex "CC BY-NC-SA 4.0")'
 				},
 				field_resource_type: {
 					type: "string",
-					description: "Type of the resource (ex \"still image\")"
+					description: 'Type of the resource (ex "still image")'
 				},
 				field_language: { type: "string", description: "Language(s) of the resource" },
 				field_note: { type: "string", description: "Additional notes related to the resource" },
-				field_subject: { type: "string", description: "Subject or topic of the resource (ex \"Events; Language education; Speeches, addresses, etc., Canadian; Panjabi language\")" },
+				field_subject: {
+					type: "string",
+					description:
+						'Subject or topic of the resource (ex "Events; Language education; Speeches, addresses, etc., Canadian; Panjabi language")'
+				},
 				//field_sacda_thesaurus: {
 				//	type: "string",
 				//	description: "Controlled vocabulary or thesaurus term (SACDA)"
@@ -107,12 +121,13 @@ const responseFormat = {
 				},
 				field_geographic_subject: {
 					type: "string",
-					description: "Geographic subject or location associated with the resource (ex \"surrey_bc\")"
+					description:
+						'Geographic subject or location associated with the resource (ex "surrey_bc")'
 				},
 				field_coordinates: {
 					type: "string",
 					description: "Geographic coordinates related to the resource"
-				},
+				}
 				//field_member_of: {
 				//	type: "string",
 				//	description: "Collection or group this resource belongs to"
@@ -142,7 +157,7 @@ const responseFormat = {
 				"field_subjects_name",
 				"field_subject_name__organization",
 				"field_geographic_subject",
-				"field_coordinates",
+				"field_coordinates"
 				//"field_member_of",
 				//"file",
 				//"file_extention",
@@ -162,21 +177,17 @@ export const cohere = new CohereClientV2({
 	token: COHERE_API_KEY
 });
 
-export async function 	queryCohere(image: string, qna?: [q: string, a: string][]) {
+export async function queryCohere(image: string, qna?: [q: string, a: string][]) {
 	const response = await cohere.chat({
 		model: "command-a-vision-07-2025",
 		messages: [
 			{
 				role: "system",
-				content: [
-					{ type: "text", text: prompt }
-				]
+				content: [{ type: "text", text: prompt }]
 			},
 			{
 				role: "user",
-				content: [
-					{ type: "image_url", imageUrl: { url: `data:image/png;base64,${image}` } } as any,
-				]
+				content: [{ type: "image_url", imageUrl: { url: `data:image/png;base64,${image}` } } as any]
 			},
 			...(qna
 				? [

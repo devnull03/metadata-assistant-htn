@@ -76,7 +76,7 @@
 		font-size: 5.2rem;
 		font-weight: 800;
 		margin: 0.2em 0;
-		color: var(--primary);
+		color: var(--dark);
 	}
 
 	h2 {
@@ -84,7 +84,7 @@
 		font-weight: 400;
 		margin: 0.5em 0 1.5em;
 		line-height: 1.4;
-		color: var(--secondary) !important;
+		color: var(--dark);
 	}
 
 	p {

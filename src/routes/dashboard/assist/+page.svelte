@@ -6,7 +6,7 @@
 	import { loadProject, saveProject } from "$lib/utils/project";
 	import { onMount } from "svelte";
 	import type { PageData } from "./$types";
-	import ImageViewModal from "$lib/components/item-view-modal/item-view-modal.svelte";
+	import ItemViewModal from "$lib/components/item-view-modal/item-view-modal.svelte";
 
 	let data: PageData = $props();
 
@@ -134,19 +134,19 @@
 	let onItemClick = async (item: any) => {
 		const file = await item[1].getFile();
 		if (file) {
-			imageViewModalData = { img: URL.createObjectURL(file), itemFields: item[1].metadata || null };
-			isImageViewModalOpen = true;
+			itemViewModalData = { img: URL.createObjectURL(file), itemFields: item[1].metadata || null };
+			isItemViewModalOpen = true;
 		}
 	};
 
-	let isImageViewModalOpen = $state(false);
-	let imageViewModalData = $state<{ img: string; itemFields: Record<string, any> | null } | null>(
+	let isItemViewModalOpen = $state(false);
+	let itemViewModalData = $state<{ img: string; itemFields: Record<string, any> | null } | null>(
 		null
 	);
 </script>
 
-{#if imageViewModalData}
-	<ImageViewModal bind:isOpen={isImageViewModalOpen} {...imageViewModalData} />
+{#if itemViewModalData}
+	<ItemViewModal bind:isOpen={isItemViewModalOpen} {...itemViewModalData} />
 {/if}
 
 <div class="p-4 max-w-full">

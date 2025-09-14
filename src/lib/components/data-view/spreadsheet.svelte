@@ -77,6 +77,10 @@
 	let shiftPressed = $state(false);
 	let ctrlPressed = $state(false);
 
+	// Column resizing state
+	let columnWidths = $state<Record<number, number>>({});
+	let resizing = $state<{ colIndex: number; startX: number; startWidth: number } | null>(null);
+
 	// Configuration
 	const finalConfig = $derived({ ...defaultConfig, ...config });
 
@@ -216,8 +220,6 @@
 		editing = null;
 	}
 
-
-
 	function handleRowHeaderClick(rowIndex: number) {
 		const start = encodeCell({ c: 0, r: rowIndex });
 		const end = encodeCell({ c: (spreadsheetData?.columns.length || 6) - 1, r: rowIndex });
@@ -250,6 +252,54 @@
 		if (!selectionBounds) return false;
 		return rowIndex >= selectionBounds.tl.r && rowIndex <= selectionBounds.br.r;
 	}
+
+	// Column resizing functions
+	function handleResizeStart(event: MouseEvent, colIndex: number) {
+		event.preventDefault();
+		event.stopPropagation();
+
+		const currentWidth = columnWidths[colIndex] || 150; // Default width
+		resizing = {
+			colIndex,
+			startX: event.clientX,
+			startWidth: currentWidth
+		};
+
+		document.addEventListener("mousemove", handleResizeMove);
+		document.addEventListener("mouseup", handleResizeEnd);
+		document.body.style.cursor = "col-resize";
+		document.body.style.userSelect = "none";
+	}
+
+	function handleResizeMove(event: MouseEvent) {
+		if (!resizing) return;
+
+		const deltaX = event.clientX - resizing.startX;
+		const newWidth = Math.max(50, resizing.startWidth + deltaX); // Minimum width of 50px
+
+		columnWidths[resizing.colIndex] = newWidth;
+	}
+
+	function handleResizeEnd() {
+		resizing = null;
+		document.removeEventListener("mousemove", handleResizeMove);
+		document.removeEventListener("mouseup", handleResizeEnd);
+		document.body.style.cursor = "";
+		document.body.style.userSelect = "";
+	}
+
+	function getCurrentColumnWidth(colIndex: number): string {
+		return `${columnWidths[colIndex] || 150}px`;
+	}
+
+	// Cleanup event listeners on component destroy
+	$effect(() => {
+		return () => {
+			if (resizing) {
+				handleResizeEnd();
+			}
+		};
+	});
 </script>
 
 <svelte:window onkeydown={handleKeyDown} onkeyup={handleKeyUp} />
@@ -257,10 +307,9 @@
 {#if spreadsheetData}
 	<div
 		class={cn(
-			"spreadsheet-container border rounded-lg overflow-hidden bg-background flex flex-col",
+			"spreadsheet-container border rounded-lg overflow-hidden bg-background flex flex-col w-full max-w-[calc(100vw-20rem)]",
 			className
 		)}
-		style={`--column-count: ${spreadsheetData?.columns.length || 1}`}
 		tabindex="0"
 		role="grid"
 		aria-label="Spreadsheet"
@@ -288,10 +337,10 @@
 
 		<!-- Spreadsheet table -->
 		<div
-			class="spreadsheet-table overflow-auto flex-1"
+			class="spreadsheet-table overflow-x-auto overflow-y-auto flex-1 w-full max-w-[calc(100vw-18rem)]"
 			style={`height: ${finalConfig.tableHeight || "100%"}`}
 		>
-			<table class="w-full border-collapse table-fixed">
+			<table class="border-collapse w-full max-w-[calc(100vw-18rem)]">
 				<!-- Column headers -->
 				<thead class="sticky top-0 bg-muted/50 border-b">
 					<tr>
@@ -305,13 +354,21 @@
 						{#each spreadsheetData.columns as column, colIndex}
 							<th
 								class={cn(
-									"h-8 px-2 border-r border-b bg-muted text-center text-sm font-medium cursor-pointer hover:bg-muted/80",
+									"h-8 px-2 border-r border-b bg-muted text-center text-sm font-medium cursor-pointer hover:bg-muted/80 relative",
 									isColumnSelected(colIndex) && "bg-primary/20"
 								)}
+								style={`width: ${getCurrentColumnWidth(colIndex)}; max-width: ${getCurrentColumnWidth(colIndex)};`}
 								onclick={() => handleColumnHeaderClick(colIndex)}
 								role="columnheader"
 							>
 								{column.title || encodeCol(colIndex)}
+
+								<!-- Resize handle -->
+								<div
+									class="absolute right-0 top-0 w-2 h-full cursor-col-resize hover:bg-primary/30 transition-colors"
+									onmousedown={(e) => handleResizeStart(e, colIndex)}
+									title="Drag to resize column"
+								></div>
 							</th>
 						{/each}
 					</tr>
@@ -341,7 +398,7 @@
 									onclick={(e) => {
 										if (onItemClick && items?.rows[rowIndex]) {
 											onItemClick(items.rows[rowIndex]);
-										}	
+										}
 									}}
 									aria-label={`Expand row ${rowIndex + 1}`}
 								>
@@ -357,7 +414,7 @@
 										isCellSelected(colIndex, rowIndex) && "bg-primary/10",
 										editing?.[0] === colIndex && editing?.[1] === rowIndex && "bg-primary/20"
 									)}
-									style={computeStyles(
+									style={`width: ${getCurrentColumnWidth(colIndex)}; max-width: ${getCurrentColumnWidth(colIndex)}; ${computeStyles(
 										colIndex,
 										rowIndex,
 										row,
@@ -365,7 +422,7 @@
 										finalConfig,
 										row[colIndex],
 										row[colIndex + 1]
-									)}
+									)}`}
 									onclick={(e) => handleCellClick(colIndex, rowIndex, e)}
 									ondblclick={() => handleCellDoubleClick(colIndex, rowIndex)}
 									role="gridcell"
@@ -381,8 +438,8 @@
 											use:focus
 										/>
 									{:else}
-										<div class="px-2 py-1 text-sm truncate w-full h-full flex items-center">
-											{row[colIndex] || ""}
+										<div class="px-2 py-1 text-sm w-full h-full flex items-center overflow-hidden">
+											<span class="truncate">{row[colIndex] || ""}</span>
 										</div>
 									{/if}
 								</td>
@@ -400,22 +457,20 @@
 		--cell-height: 32px;
 		--header-height: 40px;
 		min-height: 400px;
+		/* Ensure container respects parent width */
+		box-sizing: border-box;
 	}
 
 	.spreadsheet-table {
 		/* Enable smooth scrolling */
 		scroll-behavior: smooth;
+		/* Ensure table container is constrained */
+		max-width: 100%;
 	}
 
-	/* Improve table rendering performance */
+	/* Improve table rendering performance and enforce column widths */
 	.spreadsheet-table table {
 		table-layout: fixed;
-	}
-
-	/* Make columns distribute evenly */
-	.spreadsheet-table th:not(:first-child):not(:nth-child(2)),
-	.spreadsheet-table td:not(:first-child):not(:nth-child(2)) {
-		width: calc((100% - 88px) / var(--column-count));
 	}
 
 	/* Selection styling */
@@ -430,15 +485,16 @@
 		border-color: hsl(var(--border));
 	}
 
-	/* Ensure text doesn't wrap in cells */
+	/* Ensure text truncates properly in fixed width columns */
 	td div {
+		overflow: hidden;
+		max-width: 100%;
+	}
+
+	td div span {
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-	}
-
-	/* Full width cells */
-	table {
-		width: 100%;
+		display: block;
 	}
 </style>

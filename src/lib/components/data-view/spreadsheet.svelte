@@ -247,57 +247,55 @@
 
 {#if spreadsheetData}
 	<div
-		class={cn("spreadsheet-container border rounded-lg overflow-hidden bg-background", className)}
+		class={cn(
+			"spreadsheet-container border rounded-lg overflow-hidden bg-background flex flex-col",
+			className
+		)}
+		style={`--column-count: ${spreadsheetData?.columns.length || 1}`}
 		tabindex="0"
 		role="grid"
 		aria-label="Spreadsheet"
 	>
-		<!-- Formula bar -->
-		<div class="formula-bar flex items-center gap-2 p-2 border-b bg-muted/30">
-			<div class="flex items-center gap-2">
-				<span class="text-sm font-medium text-muted-foreground">Cell:</span>
-				<div class="px-2 py-1 text-sm bg-background border rounded min-w-[60px] text-center">
-					{selected ? selected[0] : ""}
-				</div>
+		<!-- Simplified toolbar (no formula bar) -->
+		<div class="toolbar flex items-center justify-between p-2 border-b bg-muted/30">
+			<div class="flex items-center gap-4">
+				<span class="text-sm text-muted-foreground">
+					{spreadsheetData.data.length} rows × {spreadsheetData.columns.length} columns
+				</span>
+				{#if selected}
+					<span class="text-sm text-muted-foreground">
+						Selected: {selected[0]}{selected[1] && selected[1] !== selected[0]
+							? `:${selected[1]}`
+							: ""}
+					</span>
+				{/if}
 			</div>
-			<div class="flex items-center gap-2 flex-1">
-				<span class="text-sm font-medium text-muted-foreground">Value:</span>
-				<input
-					type="text"
-					value={currentValue}
-					placeholder="Enter value..."
-					class="flex-1 px-3 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-primary/20"
-					readonly={!selected}
-					onchange={(e) => {
-						if (selected) {
-							const { c, r } = decodeCell(selected[0]);
-							handleInputChange(e.currentTarget.value, c, r);
-						}
-					}}
-				/>
+			<div class="flex items-center gap-2 text-xs text-muted-foreground">
+				<span>Double-click: Edit</span>
+				<span>Ctrl+C/V: Copy/Paste</span>
+				<span>Del: Clear</span>
 			</div>
 		</div>
 
 		<!-- Spreadsheet table -->
 		<div
-			class="spreadsheet-table overflow-auto"
-			style={`max-height: ${finalConfig.tableHeight || "400px"}`}
+			class="spreadsheet-table overflow-auto flex-1"
+			style={`height: ${finalConfig.tableHeight || "100%"}`}
 		>
-			<table class="w-full border-collapse">
+			<table class="w-full border-collapse table-fixed">
 				<!-- Column headers -->
 				<thead class="sticky top-0 bg-muted/50 border-b">
 					<tr>
 						<!-- Top-left corner cell -->
-						<th class="w-10 h-8 border-r border-b bg-muted text-center"></th>
+						<th class="w-12 h-8 border-r border-b bg-muted text-center"></th>
 
 						<!-- Column headers -->
 						{#each spreadsheetData.columns as column, colIndex}
 							<th
 								class={cn(
-									"h-8 px-2 border-r border-b bg-muted text-center text-sm font-medium cursor-pointer hover:bg-muted/80 min-w-[100px]",
+									"h-8 px-2 border-r border-b bg-muted text-center text-sm font-medium cursor-pointer hover:bg-muted/80",
 									isColumnSelected(colIndex) && "bg-primary/20"
 								)}
-								style={`width: ${getColumnWidth(colIndex, spreadsheetData.columns)}px`}
 								onclick={() => handleColumnHeaderClick(colIndex)}
 								role="columnheader"
 							>
@@ -314,7 +312,7 @@
 							<!-- Row header -->
 							<td
 								class={cn(
-									"w-10 h-7 border-r border-b bg-muted text-center text-sm font-medium cursor-pointer hover:bg-muted/80 sticky left-0",
+									"w-12 h-8 border-r border-b bg-muted text-center text-sm font-medium cursor-pointer hover:bg-muted/80 sticky left-0",
 									isRowSelected(rowIndex) && "bg-primary/20"
 								)}
 								onclick={() => handleRowHeaderClick(rowIndex)}
@@ -327,11 +325,19 @@
 							{#each spreadsheetData.columns as column, colIndex}
 								<td
 									class={cn(
-										"h-7 border-r border-b p-0 relative min-w-[100px]",
+										"h-8 border-r border-b p-0 relative",
 										isCellSelected(colIndex, rowIndex) && "bg-primary/10",
 										editing?.[0] === colIndex && editing?.[1] === rowIndex && "bg-primary/20"
 									)}
-									style={`width: ${getColumnWidth(colIndex, spreadsheetData.columns)}px; ${computeStyles(colIndex, rowIndex, row, spreadsheetData.style, finalConfig, row[colIndex], row[colIndex + 1])}`}
+									style={computeStyles(
+										colIndex,
+										rowIndex,
+										row,
+										spreadsheetData.style,
+										finalConfig,
+										row[colIndex],
+										row[colIndex + 1]
+									)}
 									onclick={(e) => handleCellClick(colIndex, rowIndex, e)}
 									ondblclick={() => handleCellDoubleClick(colIndex, rowIndex)}
 									role="gridcell"
@@ -342,13 +348,12 @@
 											type="text"
 											value={row[colIndex] || ""}
 											class="w-full h-full px-2 text-sm border-0 bg-transparent focus:outline-none focus:ring-2 focus:ring-primary/50"
-											style={`width: ${getColumnWidth(colIndex, spreadsheetData.columns)}px`}
 											oninput={(e) => handleInputChange(e.currentTarget.value, colIndex, rowIndex)}
 											onblur={handleInputBlur}
 											use:focus
 										/>
 									{:else}
-										<div class="px-2 py-1 text-sm truncate">
+										<div class="px-2 py-1 text-sm truncate w-full h-full flex items-center">
 											{row[colIndex] || ""}
 										</div>
 									{/if}
@@ -359,37 +364,14 @@
 				</tbody>
 			</table>
 		</div>
-
-		<!-- Status bar -->
-		<div
-			class="status-bar flex items-center justify-between p-2 border-t bg-muted/30 text-sm text-muted-foreground"
-		>
-			<div class="flex items-center gap-4">
-				<span>
-					{spreadsheetData.data.length} rows × {spreadsheetData.columns.length} columns
-				</span>
-				{#if selected}
-					<span>
-						Selected: {selected[0]}{selected[1] && selected[1] !== selected[0]
-							? `:${selected[1]}`
-							: ""}
-					</span>
-				{/if}
-			</div>
-			<div class="flex items-center gap-2 text-xs">
-				<span>Ctrl+C: Copy</span>
-				<span>Ctrl+V: Paste</span>
-				<span>Del: Clear</span>
-				<span>F2/Double-click: Edit</span>
-			</div>
-		</div>
 	</div>
 {/if}
 
 <style>
 	.spreadsheet-container {
-		--cell-height: 28px;
-		--header-height: 32px;
+		--cell-height: 32px;
+		--header-height: 40px;
+		min-height: 400px;
 	}
 
 	.spreadsheet-table {
@@ -400,6 +382,12 @@
 	/* Improve table rendering performance */
 	.spreadsheet-table table {
 		table-layout: fixed;
+	}
+
+	/* Make columns distribute evenly */
+	.spreadsheet-table th:not(:first-child),
+	.spreadsheet-table td:not(:first-child) {
+		width: calc((100% - 48px) / var(--column-count));
 	}
 
 	/* Selection styling */
@@ -419,5 +407,10 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+
+	/* Full width cells */
+	table {
+		width: 100%;
 	}
 </style>

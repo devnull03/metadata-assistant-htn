@@ -1,38 +1,61 @@
-# sv
+# qrate — The Quintessential Archivist’s Tool
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+qrate (pronounced *curate*) is an **AI-enhanced workspace** for archivists, librarians, and historians. It helps annotate and catalog historical items in a fraction of the time, while keeping accuracy in human hands.
 
-## Creating a project
+---
 
-If you're seeing this, you've probably already done this step. Congrats!
+## ✨ Features
+- AI-assisted metadata extraction  
+- Smart Q&A for uncertain fields  
+- Spreadsheet to review and revise metadata
 
-```sh
-# create a new project in the current directory
-npx sv create
+---
 
-# create a new project in my-app
-npx sv create my-app
+## 🛠 Tech Stack
+- **Framework**: SvelteKit (frontend + backend)  
+- **AI**: Cohere LLMs
+
+---
+
+## ⚡ Getting Started
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) 18 or later  
+- A package manager: **npm**, **pnpm**, or **yarn**
+
+### Clone the Repository
+```
+git clone https://github.com/devnull03/metadata-assistant-htn.git
+cd metadata-assistant-htn
 ```
 
-## Developing
+### Install Dependencies
+```
+npm install
+# or
+pnpm install
+# or
+yarn install
+```
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+### Run in Development
+```
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
+The app will be available at [http://localhost:5173](http://localhost:5173).
 
-## Building
-
-To create a production version of your app:
-
-```sh
+### Build for Production
+```
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+### Preview the Build
+```
+npm run preview
+```
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## 🔮 What's Next
+
+- **Review & Validate**: Tools for batch approval and quality scoring.  
+- **Documentation**: Workflow guides, best practices, API docs, and tutorials.  
+- **Data Visualization**: Progress tracking, charts, quality metrics, and exportable reports.  

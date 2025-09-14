@@ -53,7 +53,7 @@
 				};
 				// Small delay to show success message
 				setTimeout(() => {
-					goto("./dashboard");
+					goto("./dashboard/assist");
 				}, 1000);
 			} else {
 				throw new Error("Failed to create project");
@@ -68,7 +68,7 @@
 
 	const openExistingProject = async () => {
 		if (await projectExists()) {
-			goto("./dashboard");
+			goto("./dashboard/assist");
 		} else {
 			alert("No existing project found. Please create a new project.");
 		}

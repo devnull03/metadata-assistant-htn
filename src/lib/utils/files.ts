@@ -54,7 +54,6 @@ export interface ImageResponse {
 // USELESS
 export const getImageRes = async (filename: string, base64: string, qna?: [string, string][]) => {
 	console.log(base64)
-	localStorage.imageRes ||= "{}";
 	const data = (JSON.parse(localStorage.imageRes)[filename] ?? null) as null | ImageResponse;
 	const dat =
 		!data || (!data.is_done && qna)

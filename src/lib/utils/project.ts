@@ -1,4 +1,10 @@
-import type { Image, Field, Sheet, AIMetadata, ImageResponse } from "$lib/interfaces/sheet.interface";
+import type {
+	Image,
+	Field,
+	Sheet,
+	AIMetadata,
+	ImageResponse
+} from "$lib/interfaces/sheet.interface";
 import { getUploadedFiles, setStoredSpreadsheet } from "./files";
 import * as kv from "idb-keyval";
 
@@ -16,92 +22,95 @@ export interface DefaultFieldConfig {
 export const DEFAULT_FIELDS: DefaultFieldConfig[] = [
 	{
 		field: {
-			title: 'file',
-			instructions: 'File names must match exactly with uploaded images.'
+			title: "file",
+			instructions: "File names must match exactly with uploaded images."
 		},
 		generator: (image: Image) => image[1].name
 	},
 	{
 		field: {
-			title: 'file_extension',
-			instructions: 'File extension extracted from the filename.'
+			title: "file_extension",
+			instructions: "File extension extracted from the filename."
 		},
 		generator: (image: Image) => {
 			const name = image[1].name;
-			const lastDot = name.lastIndexOf('.');
-			return lastDot !== -1 ? name.substring(lastDot + 1) : '';
+			const lastDot = name.lastIndexOf(".");
+			return lastDot !== -1 ? name.substring(lastDot + 1) : "";
 		}
 	},
 	{
 		field: {
-			title: 'accessIdentifier',
-			instructions: 'Unique identifier for accessing this item.'
+			title: "accessIdentifier",
+			instructions: "Unique identifier for accessing this item."
 		},
-		generator: () => '' // Empty for now, can be customized later
+		generator: () => "" // Empty for now, can be customized later
 	},
 	// AI-generated metadata fields
 	{
 		field: {
-			title: 'fileTitle',
-			instructions: 'Title of the file as determined by AI analysis.'
+			title: "fileTitle",
+			instructions: "Title of the file as determined by AI analysis."
 		},
-		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.fileTitle || ''
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.fileTitle || ""
 	},
 	{
 		field: {
-			title: 'title',
-			instructions: 'Descriptive title of the image content.'
+			title: "title",
+			instructions: "Descriptive title of the image content."
 		},
-		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.title || ''
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.title || ""
 	},
 	{
 		field: {
-			title: 'field_description',
-			instructions: 'Detailed description of the image content.'
+			title: "field_description",
+			instructions: "Detailed description of the image content."
 		},
-		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_description || ''
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_description || ""
 	},
 	{
 		field: {
-			title: 'field_subject',
-			instructions: 'Subject or topic of the image.'
+			title: "field_subject",
+			instructions: "Subject or topic of the image."
 		},
-		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_subject || ''
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_subject || ""
 	},
 	{
 		field: {
-			title: 'field_linked_agent',
-			instructions: 'Person or organization linked to this resource.'
+			title: "field_linked_agent",
+			instructions: "Person or organization linked to this resource."
 		},
-		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_linked_agent || ''
+		generator: (image: Image, index: number, aiData?: AIMetadata) =>
+			aiData?.field_linked_agent || ""
 	},
 	{
 		field: {
-			title: 'field_resource_type',
-			instructions: 'Type of the resource (e.g., still image).'
+			title: "field_resource_type",
+			instructions: "Type of the resource (e.g., still image)."
 		},
-		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_resource_type || 'still image'
+		generator: (image: Image, index: number, aiData?: AIMetadata) =>
+			aiData?.field_resource_type || "still image"
 	},
 	{
 		field: {
-			title: 'field_rights',
-			instructions: 'Rights or usage restrictions for the resource.'
+			title: "field_rights",
+			instructions: "Rights or usage restrictions for the resource."
 		},
-		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_rights || ''
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_rights || ""
 	},
 	{
 		field: {
-			title: 'field_geographic_subject',
-			instructions: 'Geographic location associated with the resource.'
+			title: "field_geographic_subject",
+			instructions: "Geographic location associated with the resource."
 		},
-		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_geographic_subject || ''
+		generator: (image: Image, index: number, aiData?: AIMetadata) =>
+			aiData?.field_geographic_subject || ""
 	},
 	{
 		field: {
-			title: 'field_coordinates',
-			instructions: 'Geographic coordinates related to the resource.'
+			title: "field_coordinates",
+			instructions: "Geographic coordinates related to the resource."
 		},
-		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_coordinates || ''
+		generator: (image: Image, index: number, aiData?: AIMetadata) => aiData?.field_coordinates || ""
 	}
 ];
 
@@ -111,7 +120,7 @@ export const DEFAULT_FIELDS: DefaultFieldConfig[] = [
 export interface ProjectCreationOptions {
 	name?: string;
 	defaultFields?: DefaultFieldConfig[];
-	sortOrder?: 'asc' | 'desc';
+	sortOrder?: "asc" | "desc";
 }
 
 /**
@@ -120,15 +129,15 @@ export interface ProjectCreationOptions {
  */
 export async function projectExists(): Promise<boolean> {
 	// Check if we're in a browser environment
-	if (typeof window === 'undefined') {
+	if (typeof window === "undefined") {
 		return true;
 	}
 
 	try {
-		const sheet = await kv.get('sheet');
+		const sheet = await kv.get("sheet");
 		return sheet !== undefined && sheet !== null;
 	} catch (error) {
-		console.error('Failed to check if project exists:', error);
+		console.error("Failed to check if project exists:", error);
 		return false;
 	}
 }
@@ -136,12 +145,12 @@ export async function projectExists(): Promise<boolean> {
 /**
  * Sort images in the specified order
  */
-function sortImages(images: Image[], order: 'asc' | 'desc' = 'desc'): Image[] {
+function sortImages(images: Image[], order: "asc" | "desc" = "desc"): Image[] {
 	return images.sort((a, b) => {
 		const nameA = a[1].name;
 		const nameB = b[1].name;
 
-		if (order === 'desc') {
+		if (order === "desc") {
 			return nameA > nameB ? -1 : nameA < nameB ? 1 : 0;
 		} else {
 			return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
@@ -158,7 +167,7 @@ function generateTemplateSpreadsheet(
 	aiResults?: Map<string, ImageResponse>
 ): Sheet {
 	// Extract fields from configurations
-	const fields = fieldConfigs.map(config => config.field);
+	const fields = fieldConfigs.map((config) => config.field);
 
 	// Generate rows using the generator functions
 	const rows = images.map((image, index) => {
@@ -166,12 +175,12 @@ function generateTemplateSpreadsheet(
 		const filename = image[1].name;
 		const aiData = aiResults?.get(filename)?.metadata;
 
-		fieldConfigs.forEach(config => {
+		fieldConfigs.forEach((config) => {
 			const fieldTitle = config.field.title;
 			if (config.generator) {
 				row[fieldTitle] = config.generator(image, index, aiData);
 			} else {
-				row[fieldTitle] = '';
+				row[fieldTitle] = "";
 			}
 		});
 
@@ -196,7 +205,7 @@ export async function createFromScratch(
 		// Get uploaded files
 		const images = await getUploadedFiles();
 		if (!images || images.length === 0) {
-			console.warn('No uploaded images found');
+			console.warn("No uploaded images found");
 			return null;
 		}
 
@@ -204,7 +213,7 @@ export async function createFromScratch(
 		const fieldConfigs = options.defaultFields || DEFAULT_FIELDS;
 
 		// Sort images (default: descending)
-		const sortOrder = options.sortOrder || 'desc';
+		const sortOrder = options.sortOrder || "desc";
 		const sortedImages = sortImages(images, sortOrder);
 
 		// Generate template spreadsheet with AI data
@@ -215,19 +224,18 @@ export async function createFromScratch(
 
 		// Store AI results for future reference
 		if (aiResults) {
-			await kv.set('ai-results', Object.fromEntries(aiResults));
+			await kv.set("ai-results", Object.fromEntries(aiResults));
 		}
 
 		// Optionally store project metadata
 		if (options.name) {
-			await kv.set('project-name', options.name);
+			await kv.set("project-name", options.name);
 		}
 
 		console.log(`Created project with ${sheet.rows.length} items and AI metadata`);
 		return sheet;
-
 	} catch (error) {
-		console.error('Failed to create project from scratch:', error);
+		console.error("Failed to create project from scratch:", error);
 		return null;
 	}
 }
@@ -258,7 +266,7 @@ export function getDefaultFields(): DefaultFieldConfig[] {
  */
 export async function createWithCustomFields(
 	customFields: DefaultFieldConfig[],
-	options: Omit<ProjectCreationOptions, 'defaultFields'> = {}
+	options: Omit<ProjectCreationOptions, "defaultFields"> = {}
 ): Promise<Sheet | null> {
 	return createFromScratch({
 		...options,
@@ -277,44 +285,43 @@ export async function createProjectWithAI(
 ): Promise<Sheet | null> {
 	try {
 		// Store directory handle first
-		await kv.set('images', directoryHandle);
+		await kv.set("images", directoryHandle);
 
 		// Process images with AI
 		const aiResults = new Map<string, ImageResponse>();
 
-		for (let i = 0; i < images.length; i++) {
-			const [filename, handle] = images[i];
+		await Promise.all(
+			images.map(async ([filename, handle], index) => {
+				// Notify progress (note: will not be strictly sequential)
+				onProgress?.(index + 1, images.length, filename);
 
-			// Notify progress
-			onProgress?.(i + 1, images.length, filename);
+				try {
+					const file = await handle.getFile();
+					const base64 = await blobToBase64(file);
 
-			try {
-				const file = await handle.getFile();
-				const base64 = await blobToBase64(file);
+					// Call AI service
+					const response = await fetch("/api/image", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ image: base64 })
+					});
 
-				// Call AI service
-				const response = await fetch('/api/image', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ image: base64 })
-				});
-
-				if (response.ok) {
-					const data = await response.json();
-					aiResults.set(filename, data.response);
-				} else {
-					console.warn(`Failed to process ${filename} with AI`);
+					if (response.ok) {
+						const data = await response.json();
+						aiResults.set(filename, data.response);
+					} else {
+						console.warn(`Failed to process ${filename} with AI`);
+					}
+				} catch (error) {
+					console.error(`Error processing ${filename}:`, error);
 				}
-			} catch (error) {
-				console.error(`Error processing ${filename}:`, error);
-			}
-		}
+			})
+		);
 
 		// Create project with AI results
 		return await createFromScratch(options, aiResults);
-
 	} catch (error) {
-		console.error('Failed to create project with AI:', error);
+		console.error("Failed to create project with AI:", error);
 		return null;
 	}
 }
@@ -339,10 +346,10 @@ async function blobToBase64(blob: Blob): Promise<string> {
  */
 export async function loadProject(): Promise<Sheet | null> {
 	try {
-		const sheet = await kv.get('sheet');
-		return sheet as Sheet || null;
+		const sheet = await kv.get("sheet");
+		return (sheet as Sheet) || null;
 	} catch (error) {
-		console.error('Failed to load project:', error);
+		console.error("Failed to load project:", error);
 		return null;
 	}
 }
@@ -355,7 +362,7 @@ export async function saveProject(sheet: Sheet): Promise<boolean> {
 		await setStoredSpreadsheet(sheet);
 		return true;
 	} catch (error) {
-		console.error('Failed to save project:', error);
+		console.error("Failed to save project:", error);
 		return false;
 	}
 }
@@ -365,11 +372,11 @@ export async function saveProject(sheet: Sheet): Promise<boolean> {
  */
 export async function clearProject(): Promise<boolean> {
 	try {
-		await kv.del('sheet');
-		await kv.del('project-name');
+		await kv.del("sheet");
+		await kv.del("project-name");
 		return true;
 	} catch (error) {
-		console.error('Failed to clear project:', error);
+		console.error("Failed to clear project:", error);
 		return false;
 	}
 }

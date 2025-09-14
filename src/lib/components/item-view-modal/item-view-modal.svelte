@@ -1,30 +1,29 @@
 <script lang="ts">
-
-     import * as Dialog from "$lib/components/ui/dialog/index.js";
-
+    import * as Dialog from "$lib/components/ui/dialog/index.js";
     
-interface ItemViewModalProps {
-    isOpen: boolean;
-    onClose?: () => void;
+    // Props interface for type safety
+    interface ItemViewModalProps {
+        isOpen: boolean;
+        img: string;
+        item: Record<string, any> | null;
+    }
 
-    img: string;
-    item: Record<string, any> | null;
-
-}
-
-let { isOpen = $bindable(), onClose, img, item}: ItemViewModalProps = $props()
-
+    // Get props in legacy mode
+    let { isOpen = $bindable(false), img, item }: ItemViewModalProps = $props();
 </script>
- 
+
 <Dialog.Root bind:open={isOpen}>
- <Dialog.Trigger></Dialog.Trigger>
- <Dialog.Content>
-  <Dialog.Header>
-   <Dialog.Title>Are you sure absolutely sure?</Dialog.Title>
-   <Dialog.Description>
-    This action cannot be undone. This will permanently delete your account
-    and remove your data from our servers.
-   </Dialog.Description>
-  </Dialog.Header>
- </Dialog.Content>
+    <Dialog.Trigger></Dialog.Trigger>
+    <Dialog.Content>
+        <Dialog.Header>
+            <Dialog.Title>{item?.title ?? "Item Preview"}</Dialog.Title>
+            <Dialog.Description>
+                {item?.description ?? "No description available."}
+            </Dialog.Description>
+        </Dialog.Header>
+
+        {#if img}
+            <img src={img} alt={item?.title ?? "Preview"} />
+        {/if}
+    </Dialog.Content>
 </Dialog.Root>

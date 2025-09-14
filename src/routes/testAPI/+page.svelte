@@ -6,7 +6,7 @@
 	const blobToBase64 = async (blob) => {
 		return new Promise<string>((resolve, reject) => {
 			const reader = new FileReader();
-			reader.onload = () => resolve(reader.result.replace("data:image/png;base64,", ""));
+			reader.onload = () => resolve(reader.result.split(",")[1]);
 			reader.onerror = (err) => reject(err);
 			reader.readAsDataURL(blob);
 		});

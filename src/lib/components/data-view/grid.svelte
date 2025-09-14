@@ -5,7 +5,7 @@
 	interface Props {
 		items: Sheet;
 		imagesLoading: boolean;
-		onViewItemClick?: (img: string, itemFields: Record<string, any> | null) => void;
+		onViewItemClick?: (img: string, itemFields: Record<string, any> | null, filename: string) => void;
 	}
 
 	let {
@@ -20,7 +20,7 @@
 			if (file) {
 				const img = URL.createObjectURL(file);
 				const itemFields = items.rows.find((row) => row.file === imageRecord[0]) || null;
-				onItemClick(img, itemFields);
+				onItemClick(img, itemFields, imageRecord[0]);
 			}
 		}
 	}

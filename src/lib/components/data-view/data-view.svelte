@@ -10,7 +10,7 @@
 		items: Sheet;
 		imagesLoading?: boolean;
 		mode?: "grid" | "spreadsheet";
-		onItemClick?: (img: string, itemFields: Record<string, any> | null) => void;
+		onItemClick?: (img: string, itemFields: Record<string, any> | null,filename: string) => void;
 		questions?: Array<{ label: string; value: string }>;
 	}
 	let {

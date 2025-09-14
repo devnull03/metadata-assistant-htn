@@ -131,17 +131,11 @@
 		};
 	}
 
-	let onItemClick = (img: string, itemFields: Record<string, any> | null) => {
+	let onItemClick = (img: string, itemFields: Record<string, any> | null, filename: string) => {
 		itemViewModalData = {
 			img,
 			itemFields,
-			questions: [
-				{ label: "What is the main subject of this image?", value: "" },
-				{ label: "What time period does this represent?", value: "" },
-				{ label: "Are there any notable features or details?", value: "" },
-				{ label: "What is the condition of the item?", value: "" },
-				{ label: "Any additional context or information?", value: "" }
-			]
+			filename
 		};
 		isItemViewModalOpen = true;
 	};
@@ -150,12 +144,17 @@
 	let itemViewModalData = $state<{
 		img: string;
 		itemFields: Record<string, any> | null;
-		questions?: Array<{ label: string; value: string }>;
+		filename: string;
 	} | null>(null);
 </script>
 
 {#if itemViewModalData}
-	<ItemViewModal bind:isOpen={isItemViewModalOpen} {...itemViewModalData} />
+	<svelte:boundary>
+		{#snippet pending()}
+			<p>Loading...</p>
+		{/snippet}
+		<ItemViewModal bind:isOpen={isItemViewModalOpen} {...itemViewModalData} />
+	</svelte:boundary>
 {/if}
 
 <div class="p-4 max-w-full">

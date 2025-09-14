@@ -3,30 +3,55 @@
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
+	import * as kv from "idb-keyval";
+	import { getUploadedFiles } from "$lib/utils/files";
 
 	// Props interface for type safety
 	interface ItemViewModalProps {
 		isOpen: boolean;
 		img?: string;
 		itemFields: Record<string, any> | null;
-		questions?: Array<{ label: string; value: string }>;
+		filename: string;
 	}
 
 	// Get props in legacy mode
-	let {
-		isOpen = $bindable(false),
-		img,
-		itemFields,
-		questions: propsQuestions
-	}: ItemViewModalProps = $props();
+	let { isOpen = $bindable(false), img, itemFields, filename }: ItemViewModalProps = $props();
 
 	$inspect(itemFields);
 
 	// Use props questions if provided, otherwise fallback to default
-	let questions = propsQuestions ?? [
-		{ label: "Name", value: "Pedro Duarte" },
-		{ label: "Username", value: "@peduarte" }
-	];
+	let questions = $state(
+		(await kv.get("ai-results"))[filename].questions.map((x) => ({
+			label: x,
+			value: ""
+		}))
+	);
+	async function blobToBase64(blob: Blob): Promise<string> {
+		return new Promise<string>((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => {
+				const result = reader.result as string;
+				resolve(result.replace(/^data:image\/[a-z]+;base64,/, ""));
+			};
+			reader.onerror = (err) => reject(err);
+			reader.readAsDataURL(blob);
+		});
+	}
+	const send = async () => {
+		const files = await getUploadedFiles();
+		const f = await files?.find((x) => x[0] === filename)![1].getFile();
+		const res = await (
+			await fetch("/api/image", {
+				method: "post",
+				body: JSON.stringify({
+					image: await blobToBase64(f),
+					qna: questions.map((x) => [x.label, x.value])
+				})
+			})
+		).json();
+		await kv.set("ai-results", { ...(await kv.get("ai-results")), [filename]: res });
+		res.response.metadata;
+	};
 </script>
 
 <Dialog.Root bind:open={isOpen}>
@@ -60,53 +85,39 @@
 
 		<!-- Right side - Chat Interface (30%) -->
 		<div class="flex-[0.3] flex flex-col">
-			<Dialog.Header class="p-6 pb-4 border-b">
-				<Dialog.Title>AI Assistant</Dialog.Title>
-				<Dialog.Description>
-					Ask questions about this image or get help with metadata
-				</Dialog.Description>
-			</Dialog.Header>
+			{#if questions.length >= 1}
+				<Dialog.Header class="p-6 pb-4 border-b">
+					<Dialog.Title>Questions</Dialog.Title>
+					<Dialog.Description>Please answer the following questions:</Dialog.Description>
+				</Dialog.Header>
 
-			<!-- Chat messages area -->
-			<div class="flex-1 overflow-y-auto p-6 space-y-4">
-				{#each questions as q}
-					<!-- AI Question -->
-					<div class="flex gap-3">
-						<div
-							class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground"
-						>
-							AI
-						</div>
-						<div class="flex-1">
-							<div class="bg-muted rounded-lg p-3 text-sm">
-								{q.label}?
+				<!-- Chat messages area -->
+				<div class="flex-1 overflow-y-auto p-2 space-y-2">
+					{#each questions as q}
+						<!-- AI Question -->
+						<div class="flex gap-1">
+							<div class="flex-1">
+								<div class="text-sm">
+									{q.label}
+								</div>
 							</div>
 						</div>
-					</div>
 
-					<!-- User Response -->
-					<div class="flex gap-3 justify-end">
-						<div class="flex-1 max-w-[80%]">
-							<div class="bg-primary text-primary-foreground rounded-lg p-3 text-sm">
-								{q.value}
+						<!-- User Response -->
+						<div class="flex gap-1 justify-end">
+							<div class="flex-1 bg-muted">
+								<input bind:value={q.value} style="width:100%;padding:.3em;" />
 							</div>
 						</div>
-						<div
-							class="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-xs font-bold"
-						>
-							U
-						</div>
-					</div>
-				{/each}
-			</div>
-
-			<!-- Chat input area -->
-			<div class="p-6 pt-4 border-t">
-				<div class="flex gap-2">
-					<Input placeholder="Ask a question about this image..." class="flex-1" />
-					<Button size="sm">Send</Button>
+					{/each}
 				</div>
-			</div>
+
+				<!-- Chat input area -->
+				<div class="p-6 pt-4 border-t">
+					<div class="flex gap-2">
+						<Button size="sm" onclick={send}>Send</Button>
+					</div>
+				</div>{/if}
 		</div>
 	</Dialog.Content>
 </Dialog.Root>

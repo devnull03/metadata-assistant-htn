@@ -289,11 +289,10 @@ export async function createProjectWithAI(
 
 		// Process images with AI
 		const aiResults = new Map<string, ImageResponse>();
-
+let i=0;
 		await Promise.all(
 			images.map(async ([filename, handle], index) => {
 				// Notify progress (note: will not be strictly sequential)
-				onProgress?.(index + 1, images.length, filename);
 
 				try {
 					const file = await handle.getFile();
@@ -306,6 +305,7 @@ export async function createProjectWithAI(
 						body: JSON.stringify({ image: base64 })
 					});
 
+					onProgress?.(++i, images.length, filename);
 					if (response.ok) {
 						const data = await response.json();
 						aiResults.set(filename, data.response);
